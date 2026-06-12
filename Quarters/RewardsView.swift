@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 // Sheet target: wraps an optional Reward (nil = create new) so the sheet can
 // be driven by sheet(item:), which builds the form with the right reward —
@@ -16,6 +17,7 @@ struct RewardsView: View {
 
     @State private var editMode = false
     @State private var formTarget: RewardFormTarget?
+    @State private var draggedReward: Reward?
 
     @Query(filter: #Predicate<Reward> { !$0.isArchived },
            sort: \Reward.sortOrder) private var rewards: [Reward]
@@ -68,6 +70,12 @@ struct RewardsView: View {
             .padding(.horizontal, 22)
             .padding(.vertical, 8)
         }
+        // Catch-all: a drop landing outside any card still ends the drag,
+        // so the source card doesn't stay ghosted at reduced opacity.
+        .onDrop(of: [.text], isTargeted: nil) { _ in
+            draggedReward = nil
+            return true
+        }
         .sheet(item: $formTarget) { target in
             RewardForm(reward: target.reward, nextSortOrder: rewards.count)
         }
@@ -104,7 +112,7 @@ struct RewardsView: View {
             }
 
             Text(reward.name)
-                .font(.qText(14, weight: .semibold))
+                .font(.qDisplay(15))
                 .foregroundStyle(Theme.ink)
 
             Text(reward.detail)
@@ -127,25 +135,35 @@ struct RewardsView: View {
         .padding(14)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.line, lineWidth: 1))
+        .qShadow()
         .hoverLift()
+        .opacity(draggedReward === reward ? 0.45 : 1)
+        .onDrag {
+            draggedReward = reward
+            return NSItemProvider(object: String(reward.sortOrder) as NSString)
+        }
+        .onDrop(of: [.text],
+                delegate: RewardDropDelegate(item: reward,
+                                             dragged: $draggedReward,
+                                             rewards: rewards))
     }
 
     @ViewBuilder
     private func redeemArea(_ reward: Reward) -> some View {
         if balance >= reward.cost {
-            // Affordable: copper redeem pill
+            // Affordable: solid copper redeem pill (matches mockup)
             Button { redeem(reward) } label: {
-                HStack(spacing: 5) {
-                    QCoin(size: 13)
+                HStack(spacing: 6) {
+                    QCoin(size: 14)
                     Text("\(reward.cost)")
-                        .font(.qMono(12, weight: .semibold))
-                        .foregroundStyle(Theme.accent)
+                        .font(.qMono(13, weight: .semibold))
+                        .foregroundStyle(Theme.onAccent)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 7)
-                .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 9))
-                .overlay(RoundedRectangle(cornerRadius: 9)
-                    .strokeBorder(Theme.accentDeep.opacity(0.4), lineWidth: 1))
+                .padding(.vertical, 8)
+                .background(Theme.accent, in: RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(Theme.accentDeep.opacity(0.6), lineWidth: 1))
                 .contentShape(Rectangle())
                 .hoverLift(1.03)
             }
@@ -198,6 +216,38 @@ struct RewardsView: View {
     private func redeem(_ reward: Reward) {
         context.insert(LedgerEntry(delta: -reward.cost,
                                    reason: "Redeemed: \(reward.icon) \(reward.name)"))
+    }
+}
+
+// MARK: - Drag-to-reorder
+// Reorders live as the dragged card passes over its siblings; sortOrder is
+// rewritten on every pass so the @Query (sorted by sortOrder) animates the
+// grid into the new arrangement.
+
+private struct RewardDropDelegate: DropDelegate {
+    let item: Reward
+    @Binding var dragged: Reward?
+    let rewards: [Reward]
+
+    func dropEntered(info: DropInfo) {
+        guard let dragged, dragged !== item,
+              let from = rewards.firstIndex(where: { $0 === dragged }),
+              let to = rewards.firstIndex(where: { $0 === item }) else { return }
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            var order = rewards
+            order.move(fromOffsets: IndexSet(integer: from),
+                       toOffset: to > from ? to + 1 : to)
+            for (i, reward) in order.enumerated() { reward.sortOrder = i }
+        }
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        dragged = nil
+        return true
     }
 }
 
