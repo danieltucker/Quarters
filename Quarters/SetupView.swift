@@ -13,109 +13,114 @@ struct SetupView: View {
     private var coinCount: Int { AppConfig.points(forBlocks: quarters) }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                // ── Header ────────────────────────────────────────────
-                SectionLabel("How long can you give?",
-                             right: "\(coinCount) coin\(coinCount == 1 ? "" : "s") + streak bonus")
-                    .padding(.bottom, 14)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    // ── Header ────────────────────────────────────────────
+                    SectionLabel("How long can you give?",
+                                 right: "\(coinCount) coin\(coinCount == 1 ? "" : "s") + streak bonus")
+                        .padding(.bottom, 14)
 
-                // ── Quarter picker + details ──────────────────────────
-                HStack(alignment: .center, spacing: 22) {
-                    QuarterPicker(quarters: $quarters, size: 120)
+                    // ── Quarter picker + details ──────────────────────────
+                    HStack(alignment: .center, spacing: 22) {
+                        QuarterPicker(quarters: $quarters, size: 120)
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("\(quarters) quarter\(quarters == 1 ? "" : "s")")
-                            .font(.qDisplay(24))
-                            .foregroundStyle(Theme.ink)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("\(quarters) quarter\(quarters == 1 ? "" : "s")")
+                                .font(.qDisplay(24))
+                                .foregroundStyle(Theme.ink)
 
-                        Text("\(minutes) minutes · mints ")
-                            .font(.qText(13))
-                            .foregroundStyle(Theme.ink2)
-                        + Text("\(coinCount) coin\(coinCount == 1 ? "" : "s")")
-                            .font(.qText(13, weight: .bold))
-                            .foregroundStyle(Theme.ink)
+                            Text("\(minutes) minutes · mints ")
+                                .font(.qText(13))
+                                .foregroundStyle(Theme.ink2)
+                            + Text("\(coinCount) coin\(coinCount == 1 ? "" : "s")")
+                                .font(.qText(13, weight: .bold))
+                                .foregroundStyle(Theme.ink)
 
-                        // Duration chips
-                        HStack(spacing: 6) {
-                            ForEach([1, 2, 3, 4], id: \.self) { q in
-                                let active = q == quarters
-                                Button { quarters = q } label: {
-                                    Text("\(q * 15)m")
-                                        .font(.qMono(11.5, weight: .semibold))
-                                        .padding(.vertical, 4)
-                                        .padding(.horizontal, 9)
-                                        .background(
-                                            active ? Theme.accent : Theme.card,
-                                            in: RoundedRectangle(cornerRadius: 7)
-                                        )
-                                        .foregroundStyle(active ? Theme.onAccent : Theme.ink2)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 7)
-                                                .strokeBorder(
-                                                    active ? Theme.accentDeep : Theme.line,
-                                                    lineWidth: 1
-                                                )
-                                        )
+                            // Duration chips
+                            HStack(spacing: 6) {
+                                ForEach([1, 2, 3, 4], id: \.self) { q in
+                                    let active = q == quarters
+                                    Button { quarters = q } label: {
+                                        Text("\(q * 15)m")
+                                            .font(.qMono(11.5, weight: .semibold))
+                                            .padding(.vertical, 4)
+                                            .padding(.horizontal, 9)
+                                            .background(
+                                                active ? Theme.accent : Theme.card,
+                                                in: RoundedRectangle(cornerRadius: 7)
+                                            )
+                                            .foregroundStyle(active ? Theme.onAccent : Theme.ink2)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 7)
+                                                    .strokeBorder(
+                                                        active ? Theme.accentDeep : Theme.line,
+                                                        lineWidth: 1
+                                                    )
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
                             }
+                            .padding(.top, 4)
                         }
-                        .padding(.top, 4)
                     }
-                }
-                .padding(16)
-                .background(Theme.card2, in: RoundedRectangle(cornerRadius: 16))
-                .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.line, lineWidth: 1))
-                .padding(.bottom, 20)
+                    .padding(16)
+                    .background(Theme.card2, in: RoundedRectangle(cornerRadius: 16))
+                    .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.line, lineWidth: 1))
+                    .padding(.bottom, 20)
 
-                // ── Goals ─────────────────────────────────────────────
-                SectionLabel("What will you get done?", right: "+1 coin per task")
-                    .padding(.bottom, 10)
+                    // ── Goals ─────────────────────────────────────────────
+                    SectionLabel("What will you get done?", right: "+1 coin per task")
+                        .padding(.bottom, 10)
 
-                // Add goal input
-                HStack(spacing: 8) {
-                    TextField("Add a goal…", text: $draft)
-                        .textFieldStyle(.plain)
-                        .font(.qText(13.5))
-                        .foregroundStyle(Theme.ink)
-                        .padding(.vertical, 10)
-                        .padding(.horizontal, 13)
-                        .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
-                        .overlay(RoundedRectangle(cornerRadius: 11)
-                            .strokeBorder(Theme.line2, lineWidth: 1.5))
-                        .onSubmit(addTask)
-
-                    Button(action: addTask) {
-                        QIcon(name: "plus", size: 16, color: Theme.ink2)
-                            .frame(width: 42, height: 42)
+                    // Add goal input
+                    HStack(spacing: 8) {
+                        TextField("Add a goal…", text: $draft)
+                            .textFieldStyle(.plain)
+                            .font(.qText(13.5))
+                            .foregroundStyle(Theme.ink)
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 13)
                             .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                             .overlay(RoundedRectangle(cornerRadius: 11)
                                 .strokeBorder(Theme.line2, lineWidth: 1.5))
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.bottom, 10)
+                            .onSubmit(addTask)
 
-                // Task rows
-                if backlog.isEmpty {
-                    Text("No goals yet — name one thing to get done.")
-                        .font(.qText(13))
-                        .foregroundStyle(Theme.ink3)
-                        .padding(.vertical, 8)
-                } else {
-                    VStack(spacing: 7) {
-                        ForEach(backlog) { task in
-                            TaskRow(task: task, showBigToggle: true, onDelete: {
-                                context.delete(task)
-                            })
+                        Button(action: addTask) {
+                            QIcon(name: "plus", size: 16, color: Theme.ink2)
+                                .frame(width: 42, height: 42)
+                                .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
+                                .overlay(RoundedRectangle(cornerRadius: 11)
+                                    .strokeBorder(Theme.line2, lineWidth: 1.5))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.bottom, 10)
+
+                    // Task rows
+                    if backlog.isEmpty {
+                        Text("No goals yet — name one thing to get done.")
+                            .font(.qText(13))
+                            .foregroundStyle(Theme.ink3)
+                            .padding(.vertical, 8)
+                    } else {
+                        VStack(spacing: 7) {
+                            ForEach(backlog) { task in
+                                TaskRow(task: task, showBigToggle: true, onDelete: {
+                                    context.delete(task)
+                                })
+                            }
                         }
                     }
                 }
+                .padding(.horizontal, 22)
+                .padding(.top, 8)
+                .padding(.bottom, 14)
+            }
 
-                Spacer(minLength: 24)
-
-                // ── Start button ──────────────────────────────────────
+            // ── Start button (always pinned to bottom) ────────────────
+            VStack(spacing: 0) {
                 Button(action: start) {
                     HStack(spacing: 9) {
                         QIcon(name: "play", size: 15, color: Theme.onAccent)
@@ -138,7 +143,8 @@ struct SetupView: View {
                 .padding(.top, 9)
             }
             .padding(.horizontal, 22)
-            .padding(.vertical, 8)
+            .padding(.top, 12)
+            .padding(.bottom, 22)
         }
     }
 
