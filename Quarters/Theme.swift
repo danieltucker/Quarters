@@ -55,6 +55,7 @@ enum Theme {
 
     // Coin — gold
     static let coin         = Color(light: "#C99B45", dark: "#D9B25F")
+    static let coinBright   = Color(light: "#EFD27A", dark: "#F2DA8C")
     static let coinDeep     = Color(light: "#A37B2F", dark: "#B8923F")
     static let coinSoft     = Color(light: "#F1E2BC", dark: "#41351C")
 }

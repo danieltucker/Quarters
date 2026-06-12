@@ -65,9 +65,12 @@ struct QCoin: View {
             let ri = 7.5  * s   // inner ring radius
             let wr = 10.4 * s   // wedge arc radius (inset from rim stroke)
 
-            // Filled face
+            // Filled face: bright top-left → deep bottom-right gold gradient
             let face = Path(ellipseIn: CGRect(x: cx - r, y: cy - r, width: r * 2, height: r * 2))
-            context.fill(face, with: .color(Theme.coin))
+            context.fill(face, with: .linearGradient(
+                Gradient(colors: [Theme.coinBright, Theme.coin, Theme.coinDeep]),
+                startPoint: CGPoint(x: cx - r * 0.7, y: cy - r * 0.8),
+                endPoint:   CGPoint(x: cx + r * 0.8, y: cy + r * 0.9)))
 
             // Rim stroke
             context.stroke(face, with: .color(Theme.coinDeep), lineWidth: 1.6 * s)
@@ -89,6 +92,14 @@ struct QCoin: View {
             )
             wedge.closeSubpath()
             context.fill(wedge, with: .color(Theme.coinDeep.opacity(0.4)))
+
+            // Specular gleam hugging the upper-left rim
+            var gleam = Path()
+            gleam.addArc(center: CGPoint(x: cx, y: cy), radius: r - 2.4 * s,
+                         startAngle: .degrees(195), endAngle: .degrees(255),
+                         clockwise: false)
+            context.stroke(gleam, with: .color(.white.opacity(0.65)),
+                           style: StrokeStyle(lineWidth: 1.5 * s, lineCap: .round))
         }
         .frame(width: size, height: size)
     }

@@ -23,6 +23,20 @@ enum Sounds {
             }
         }
     }
+
+    private static var lastClink = Date.distantPast
+
+    /// Coin clink for flight arrivals. NSSound(named:) returns a shared
+    /// instance that won't restart while playing, so play a copy for
+    /// overlap. Throttled so big pours don't machine-gun the speaker.
+    static func clink() {
+        let now = Date()
+        guard now.timeIntervalSince(lastClink) > 0.06 else { return }
+        lastClink = now
+        guard let s = NSSound(named: "Tink")?.copy() as? NSSound else { return }
+        s.volume = Float.random(in: 0.35...0.6)
+        s.play()
+    }
 }
 
 enum Notifications {

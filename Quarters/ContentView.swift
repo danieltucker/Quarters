@@ -118,6 +118,7 @@ struct ContentView: View {
                         delay: flight.delay
                     ) {
                         coinFlights.removeAll { $0.id == flight.id }
+                        Sounds.clink()
                     }
                 }
 
@@ -158,6 +159,7 @@ struct ContentView: View {
                             delay: flight.delay
                         ) {
                             spendFlights.removeAll { $0.id == flight.id }
+                            Sounds.clink()
                             withAnimation(.spring(response: 0.2, dampingFraction: 0.4)) {
                                 celebrationHits += 1
                             }
@@ -178,15 +180,14 @@ struct ContentView: View {
             celebration = RedeemCelebration(icon: icon, name: name, cost: amount,
                                             phrase: phrases.randomElement()!)
         }
-        let count = min(max(amount / 10, 3), 8)
-        for i in 0..<count {
-            spendFlights.append(CoinFlightSpec(delay: 0.2 + Double(i) * 0.08,
-                                               dx: CGFloat.random(in: -40...40)))
-        }
-        // Auto-dismiss, unless a newer celebration replaced this one
+        let specs = flightSpecs(amount: amount, baseDelay: 0.2, spread: -40...40)
+        spendFlights.append(contentsOf: specs)
+        // Auto-dismiss after the pour finishes, unless a newer celebration
+        // replaced this one
         let token = UUID()
         celebrationToken = token
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) {
+        let dismissAt = (specs.last?.delay ?? 0) + 1.8
+        DispatchQueue.main.asyncAfter(deadline: .now() + dismissAt) {
             if celebrationToken == token { dismissCelebration() }
         }
     }
@@ -197,17 +198,29 @@ struct ContentView: View {
         celebrationHits = 0
     }
 
-    private func playCoinFlight(amount: Int) {
-        let count = min(max(amount / 8, 3), 8)
-        for i in 0..<count {
-            coinFlights.append(CoinFlightSpec(delay: Double(i) * 0.07,
-                                              dx: CGFloat.random(in: -60...60)))
+    // One sprite per coin, so the size of a haul is visible — spending 950
+    // coins pours 950 coins. The stagger window compresses for big amounts
+    // (pour completes within ~2.8s); the count clamp is only a render
+    // safety net far above anything the economy produces.
+    private func flightSpecs(amount: Int, baseDelay: Double,
+                             spread: ClosedRange<CGFloat>) -> [CoinFlightSpec] {
+        let count = min(amount, 1200)
+        let window = min(2.8, max(0.45, Double(count) * 0.07))
+        return (0..<count).map { i in
+            CoinFlightSpec(delay: baseDelay + window * Double(i) / Double(max(count - 1, 1)),
+                           dx: CGFloat.random(in: spread))
         }
+    }
+
+    private func playCoinFlight(amount: Int) {
+        let specs = flightSpecs(amount: amount, baseDelay: 0, spread: -60...60)
+        coinFlights.append(contentsOf: specs)
+        let pourEnd = (specs.last?.delay ?? 0) + 0.75
         // "+N" pops in as the first coins arrive, lingers, then fades.
         withAnimation(.spring(response: 0.4, dampingFraction: 0.7).delay(0.5)) {
             gainAmount = amount
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + pourEnd + 1.2) {
             withAnimation(.easeOut(duration: 0.4)) { gainAmount = nil }
         }
     }
