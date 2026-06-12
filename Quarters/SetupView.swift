@@ -65,6 +65,7 @@ struct SetupView: View {
                             .padding(.top, 4)
                         }
                     }
+                    .frame(maxWidth: .infinity)
                     .padding(16)
                     .background(Theme.card2, in: RoundedRectangle(cornerRadius: 16))
                     .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.line, lineWidth: 1))
