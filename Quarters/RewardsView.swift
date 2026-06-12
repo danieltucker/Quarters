@@ -1,13 +1,21 @@
 import SwiftUI
 import SwiftData
 
+// Sheet target: wraps an optional Reward (nil = create new) so the sheet can
+// be driven by sheet(item:), which builds the form with the right reward —
+// sheet(isPresented:) raced against the editingReward state write and opened
+// a blank "new reward" form when editing.
+private struct RewardFormTarget: Identifiable {
+    let id = UUID()
+    let reward: Reward?
+}
+
 struct RewardsView: View {
     @Environment(\.modelContext) private var context
     let balance: Int
 
     @State private var editMode = false
-    @State private var editingReward: Reward?
-    @State private var showingForm = false
+    @State private var formTarget: RewardFormTarget?
 
     @Query(filter: #Predicate<Reward> { !$0.isArchived },
            sort: \Reward.sortOrder) private var rewards: [Reward]
@@ -60,8 +68,8 @@ struct RewardsView: View {
             .padding(.horizontal, 22)
             .padding(.vertical, 8)
         }
-        .sheet(isPresented: $showingForm) {
-            RewardForm(reward: editingReward, nextSortOrder: rewards.count)
+        .sheet(item: $formTarget) { target in
+            RewardForm(reward: target.reward, nextSortOrder: rewards.count)
         }
     }
 
@@ -80,19 +88,18 @@ struct RewardsView: View {
 
                 if editMode {
                     Button {
-                        editingReward = reward
-                        showingForm = true
+                        formTarget = RewardFormTarget(reward: reward)
                     } label: {
-                        QIcon(name: "edit", size: 14, color: Theme.ink2)
+                        QIcon(name: "edit", size: 13, color: Theme.ink2)
                     }
-                    .buttonStyle(OutlineButtonStyle())
+                    .buttonStyle(IconButtonStyle())
 
                     Button {
                         reward.isArchived = true
                     } label: {
                         QIcon(name: "x", size: 12, color: Theme.accent)
                     }
-                    .buttonStyle(OutlineButtonStyle(tint: Theme.accent))
+                    .buttonStyle(IconButtonStyle(tint: Theme.accent))
                 }
             }
 
@@ -120,6 +127,7 @@ struct RewardsView: View {
         .padding(14)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.line, lineWidth: 1))
+        .hoverLift()
     }
 
     @ViewBuilder
@@ -138,6 +146,8 @@ struct RewardsView: View {
                 .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 9))
                 .overlay(RoundedRectangle(cornerRadius: 9)
                     .strokeBorder(Theme.accentDeep.opacity(0.4), lineWidth: 1))
+                .contentShape(Rectangle())
+                .hoverLift(1.03)
             }
             .buttonStyle(.plain)
         } else {
@@ -166,8 +176,7 @@ struct RewardsView: View {
 
     private var addCard: some View {
         Button {
-            editingReward = nil
-            showingForm = true
+            formTarget = RewardFormTarget(reward: nil)
         } label: {
             VStack {
                 QIcon(name: "plus", size: 20, color: Theme.ink3)
@@ -181,6 +190,7 @@ struct RewardsView: View {
                     .strokeBorder(Theme.line2, style: StrokeStyle(lineWidth: 1.5, dash: [6]))
             )
             .contentShape(Rectangle())
+            .hoverLift(1.01)
         }
         .buttonStyle(.plain)
     }
