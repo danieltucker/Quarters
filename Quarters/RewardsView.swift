@@ -210,26 +210,59 @@ struct RewardForm: View {
     let reward: Reward?
     let nextSortOrder: Int
 
-    @State private var icon     = ""
+    @State private var icon     = "🎁"
     @State private var name     = ""
     @State private var detail   = ""
     @State private var costText = ""
+    @State private var showingEmojiPicker = false
+
+    private static let emojiOptions: [String] = [
+        "☕", "🍵", "🍫", "🍪", "🍩", "🧁", "🍦", "🍕",
+        "🍔", "🌮", "🍿", "🍺", "🍷", "🥤", "🍎", "🧋",
+        "🚶", "🏃", "🚴", "🧘", "🏋️", "⚽", "🏖️", "🌳",
+        "🎮", "🕹️", "🎬", "📺", "🎵", "🎧", "🎸", "🎨",
+        "📖", "📚", "🧩", "♟️", "🛁", "💆", "😴", "🛋️",
+        "🌐", "📱", "💻", "🛍️", "💸", "🎁", "⭐", "🏆",
+    ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             SectionLabel(reward == nil ? "New reward" : "Edit reward")
 
-            HStack(spacing: 8) {
-                TextField("🎁", text: $icon).frame(width: 50)
-                TextField("Reward name", text: $name)
-                TextField("Cost", text: $costText).frame(width: 70)
-            }
-            .textFieldStyle(.roundedBorder)
-            .font(.qText(13))
+            HStack(alignment: .top, spacing: 12) {
+                // Emoji tile → curated picker in a popover
+                Button { showingEmojiPicker = true } label: {
+                    Text(icon)
+                        .font(.system(size: 30))
+                        .frame(width: 64, height: 64)
+                        .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 16))
+                        .overlay(RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(Theme.line2, lineWidth: 1))
+                        .contentShape(RoundedRectangle(cornerRadius: 16))
+                }
+                .buttonStyle(.plain)
+                .hoverLift(1.04)
+                .help("Choose an icon")
+                .popover(isPresented: $showingEmojiPicker, arrowEdge: .bottom) {
+                    emojiGrid
+                }
 
-            TextField("Short description (optional)", text: $detail)
-                .textFieldStyle(.roundedBorder)
-                .font(.qText(13))
+                VStack(spacing: 8) {
+                    formField("Reward name", text: $name)
+
+                    HStack(spacing: 8) {
+                        formField("Cost", text: $costText)
+                            .frame(width: 90)
+                        QCoin(size: 15)
+                        Text("coins")
+                            .font(.qText(12.5))
+                            .foregroundStyle(Theme.ink2)
+                        Spacer()
+                    }
+                }
+            }
+
+            formField("Short description (optional)", text: $detail)
 
             HStack {
                 Spacer()
@@ -240,14 +273,50 @@ struct RewardForm: View {
                     .disabled(!valid)
                     .opacity(valid ? 1 : 0.4)
             }
+            .padding(.top, 2)
         }
-        .padding(20)
-        .frame(width: 360)
+        .padding(22)
+        .frame(width: 380)
         .background(Theme.bg)
         .onAppear {
             guard let r = reward else { return }
             icon = r.icon; name = r.name; detail = r.detail; costText = String(r.cost)
         }
+    }
+
+    private var emojiGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.fixed(34), spacing: 4), count: 8),
+                  spacing: 4) {
+            ForEach(Self.emojiOptions, id: \.self) { emoji in
+                Button {
+                    icon = emoji
+                    showingEmojiPicker = false
+                } label: {
+                    Text(emoji)
+                        .font(.system(size: 21))
+                        .frame(width: 34, height: 34)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(emoji == icon ? Theme.accentSoft : .clear)
+                        )
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(10)
+    }
+
+    private func formField(_ placeholder: String, text: Binding<String>) -> some View {
+        TextField(placeholder, text: text)
+            .textFieldStyle(.plain)
+            .font(.qText(13))
+            .foregroundStyle(Theme.ink)
+            .padding(.horizontal, 11)
+            .frame(height: 36)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Theme.line2, lineWidth: 1))
     }
 
     private var valid: Bool {
