@@ -104,6 +104,12 @@ struct SetupView: View {
                     .padding(.bottom, 10)
 
                     // Task rows
+                    #if DEBUG
+                    Text("debug · allTasks: \(allTasks.count)  backlog: \(backlog.count)")
+                        .font(.qMono(9))
+                        .foregroundStyle(Theme.ink3)
+                        .padding(.bottom, 4)
+                    #endif
                     if backlog.isEmpty {
                         Text("No goals yet — name one thing to get done.")
                             .font(.qText(13))
