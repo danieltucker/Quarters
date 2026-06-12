@@ -216,6 +216,10 @@ struct RewardsView: View {
     private func redeem(_ reward: Reward) {
         context.insert(LedgerEntry(delta: -reward.cost,
                                    reason: "Redeemed: \(reward.icon) \(reward.name)"))
+        NotificationCenter.default.post(name: .qCoinsSpent, object: nil,
+                                        userInfo: ["amount": reward.cost,
+                                                   "icon": reward.icon,
+                                                   "name": reward.name])
     }
 }
 

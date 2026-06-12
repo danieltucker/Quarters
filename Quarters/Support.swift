@@ -5,6 +5,9 @@ extension Notification.Name {
     /// Posted by CheckoffView when coins are collected; ContentView listens
     /// and plays the coin-flight animation up to the balance chip.
     static let qCoinsCollected = Notification.Name("qCoinsCollected")
+    /// Posted by RewardsView on redeem; ContentView shows the celebration
+    /// popup and flies coins from the chip into it.
+    static let qCoinsSpent = Notification.Name("qCoinsSpent")
 }
 
 enum Sounds {

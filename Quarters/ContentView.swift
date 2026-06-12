@@ -21,6 +21,11 @@ struct ContentView: View {
     @State private var coinFlights: [CoinFlightSpec] = []
     @State private var gainAmount: Int?
 
+    @State private var celebration: RedeemCelebration?
+    @State private var celebrationHits: CGFloat = 0
+    @State private var celebrationToken = UUID()
+    @State private var spendFlights: [CoinFlightSpec] = []
+
     private var balance: Int { ledger.reduce(0) { $0 + $1.delta } }
 
     var body: some View {
@@ -67,6 +72,7 @@ struct ContentView: View {
         .background(Theme.bg)
         .background { TitlebarConfigurator() }
         .overlay { coinFlightLayer }
+        .overlay { celebrationLayer }
         // .hiddenTitleBar still reserves the title bar strip as safe area;
         // extend into it so the header row sits beside the traffic lights.
         .ignoresSafeArea(.container, edges: .top)
@@ -74,6 +80,12 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .qCoinsCollected)) { note in
             guard let amount = note.userInfo?["amount"] as? Int else { return }
             playCoinFlight(amount: amount)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .qCoinsSpent)) { note in
+            guard let amount = note.userInfo?["amount"] as? Int,
+                  let icon = note.userInfo?["icon"] as? String,
+                  let name = note.userInfo?["name"] as? String else { return }
+            playRedeem(amount: amount, icon: icon, name: name)
         }
     }
 
@@ -121,6 +133,70 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - Redeem celebration
+
+    @ViewBuilder
+    private var celebrationLayer: some View {
+        if let celebration {
+            GeometryReader { geo in
+                ZStack {
+                    // Backdrop: dims the app and blocks a second buy click
+                    Color.black.opacity(0.22)
+                        .onTapGesture { dismissCelebration() }
+                        .transition(.opacity)
+
+                    CelebrationCard(celebration: celebration, hits: celebrationHits)
+                        .position(x: geo.size.width / 2, y: geo.size.height / 2 - 30)
+                        .transition(.scale(scale: 0.82).combined(with: .opacity))
+
+                    // Coins pour from the balance chip into the card
+                    ForEach(spendFlights) { flight in
+                        CoinFlightView(
+                            start: CGPoint(x: geo.size.width - 52, y: 26),
+                            target: CGPoint(x: geo.size.width / 2 + flight.dx / 4,
+                                            y: geo.size.height / 2 - 110),
+                            delay: flight.delay
+                        ) {
+                            spendFlights.removeAll { $0.id == flight.id }
+                            withAnimation(.spring(response: 0.2, dampingFraction: 0.4)) {
+                                celebrationHits += 1
+                            }
+                        }
+                    }
+                    .allowsHitTesting(false)
+                }
+            }
+        }
+    }
+
+    private func playRedeem(amount: Int, icon: String, name: String) {
+        let phrases = ["Enjoy!", "You deserve this.", "Treat yourself.",
+                       "Well earned.", "Make it count!", "Savor it."]
+        celebrationHits = 0
+        spendFlights.removeAll()
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+            celebration = RedeemCelebration(icon: icon, name: name, cost: amount,
+                                            phrase: phrases.randomElement()!)
+        }
+        let count = min(max(amount / 10, 3), 8)
+        for i in 0..<count {
+            spendFlights.append(CoinFlightSpec(delay: 0.2 + Double(i) * 0.08,
+                                               dx: CGFloat.random(in: -40...40)))
+        }
+        // Auto-dismiss, unless a newer celebration replaced this one
+        let token = UUID()
+        celebrationToken = token
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) {
+            if celebrationToken == token { dismissCelebration() }
+        }
+    }
+
+    private func dismissCelebration() {
+        withAnimation(.easeOut(duration: 0.25)) { celebration = nil }
+        spendFlights.removeAll()
+        celebrationHits = 0
+    }
+
     private func playCoinFlight(amount: Int) {
         let count = min(max(amount / 8, 3), 8)
         for i in 0..<count {
@@ -134,6 +210,67 @@ struct ContentView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
             withAnimation(.easeOut(duration: 0.4)) { gainAmount = nil }
         }
+    }
+}
+
+// MARK: - Redeem celebration pieces
+
+private struct RedeemCelebration {
+    let icon: String
+    let name: String
+    let cost: Int
+    let phrase: String
+}
+
+private struct CelebrationCard: View {
+    let celebration: RedeemCelebration
+    let hits: CGFloat
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Text(celebration.icon)
+                .font(.system(size: 44))
+                .frame(width: 84, height: 84)
+                .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 22))
+
+            Text(celebration.name)
+                .font(.qDisplay(20))
+                .foregroundStyle(Theme.ink)
+
+            Text(celebration.phrase)
+                .font(.qText(14))
+                .foregroundStyle(Theme.ink2)
+
+            HStack(spacing: 5) {
+                QCoin(size: 14)
+                Text("−\(celebration.cost)")
+                    .font(.qMono(13, weight: .semibold))
+                    .foregroundStyle(Theme.accent)
+            }
+            .padding(.top, 2)
+        }
+        .padding(.horizontal, 38)
+        .padding(.vertical, 28)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 22))
+        .overlay(RoundedRectangle(cornerRadius: 22).strokeBorder(Theme.line, lineWidth: 1))
+        .qShadow()
+        .modifier(CoinHitShake(animatableData: hits))
+    }
+}
+
+// Each whole increment of `hits` runs one sine cycle: the card jolts
+// sideways with a hint of rotation as a coin lands, then settles.
+private struct CoinHitShake: GeometryEffect {
+    var animatableData: CGFloat
+
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        let phase = animatableData * .pi * 2
+        let dx = sin(phase) * 4
+        let rot = sin(phase) * 0.012
+        var t = CGAffineTransform(translationX: size.width / 2, y: size.height / 2)
+        t = t.rotated(by: rot)
+        t = t.translatedBy(x: -size.width / 2 + dx, y: -size.height / 2)
+        return ProjectionTransform(t)
     }
 }
 
