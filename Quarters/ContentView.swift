@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppKit
 
 enum AppTab: String, CaseIterable {
     case focus   = "Focus"
@@ -22,9 +23,10 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             // ── Titlebar (sits in the hidden-title-bar area) ─────────────
-            // Fixed 36pt strip: contents center on the traffic lights'
-            // centerline (~18pt). Leading 76 leaves the same 18pt gap after
-            // the lights (which end ~x=58) as the trailing margin.
+            // TitlebarConfigurator gives the window an empty unified toolbar,
+            // which makes the title bar ~52pt tall with the traffic lights
+            // vertically centered in it. This strip matches that height so
+            // the wordmark and coin chip center on the same line.
             HStack {
                 QWordmark(size: 17)
                 Spacer()
@@ -32,8 +34,8 @@ struct ContentView: View {
             }
             .padding(.leading, 76)
             .padding(.trailing, 18)
-            .frame(height: 36)
-            .padding(.bottom, 6)
+            .frame(height: 52)
+            .padding(.bottom, 2)
 
             // ── Tab switcher ─────────────────────────────────────────────
             tabBar
@@ -62,6 +64,7 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(Theme.bg)
+        .background { TitlebarConfigurator() }
         // .hiddenTitleBar still reserves the title bar strip as safe area;
         // extend into it so the header row sits beside the traffic lights.
         .ignoresSafeArea(.container, edges: .top)
@@ -100,5 +103,31 @@ struct ContentView: View {
         Reward.seedDefaults(into: context)
         try? context.save()
     }
+}
+
+// MARK: - Titlebar configurator
+// An empty unified toolbar makes the title bar ~52pt tall, which vertically
+// centers the traffic lights with comfortable padding. viewDidMoveToWindow
+// guarantees window access (unlike makeNSView, where .window is still nil).
+
+private struct TitlebarConfigurator: NSViewRepresentable {
+    final class AccessorView: NSView {
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard let window else { return }
+            DispatchQueue.main.async {
+                window.titleVisibility = .hidden
+                window.titlebarAppearsTransparent = true
+                window.titlebarSeparatorStyle = .none
+                if window.toolbar == nil {
+                    window.toolbarStyle = .unified
+                    window.toolbar = NSToolbar()
+                }
+            }
+        }
+    }
+
+    func makeNSView(context: Context) -> NSView { AccessorView() }
+    func updateNSView(_ nsView: NSView, context: Context) {}
 }
 
