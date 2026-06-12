@@ -203,6 +203,9 @@ struct TaskRow: View {
                     }
                 }
                 .frame(width: 18, height: 18)
+                // The unchecked box is a .clear fill, which doesn't hit-test —
+                // without this only the 1.5pt border ring is clickable.
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -231,6 +234,8 @@ struct TaskRow: View {
                 } label: {
                     QIcon(name: "bolt", size: 14,
                           color: task.isBig ? Theme.accent : Theme.ink3)
+                        .frame(width: 22, height: 22)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .help("Mark as big task (+3 coins)")
@@ -249,6 +254,8 @@ struct TaskRow: View {
             if let onDelete {
                 Button(action: onDelete) {
                     QIcon(name: "x", size: 13, color: Theme.ink3)
+                        .frame(width: 22, height: 22)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
