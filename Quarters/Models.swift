@@ -87,6 +87,19 @@ final class LedgerEntry {
     }
 }
 
+// MARK: - DailyLog
+
+/// One record per calendar day the user completes a session.
+/// Used to compute the current streak without walking session history.
+@Model
+final class DailyLog {
+    var date: Date   // stored as start-of-day in local timezone
+
+    init() {
+        self.date = Calendar.current.startOfDay(for: .now)
+    }
+}
+
 // MARK: - Reward
 
 @Model

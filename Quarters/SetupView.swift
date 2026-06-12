@@ -9,6 +9,9 @@ struct SetupView: View {
     @Query(sort: \FocusTask.createdAt) private var allTasks: [FocusTask]
     private var backlog: [FocusTask] { allTasks.filter { $0.session == nil } }
 
+    @Query private var dailyLogs: [DailyLog]
+    private var streakDays: Int { AppConfig.streak(from: dailyLogs) }
+
     private var minutes: Int { quarters * 15 }
     private var coinCount: Int { AppConfig.points(forBlocks: quarters) }
 
@@ -134,10 +137,13 @@ struct SetupView: View {
 
                 // Streak hint
                 HStack(spacing: 4) {
-                    Text("3-day streak · finish today to keep it")
+                    Text(streakDays > 0
+                         ? "\(streakDays)-day streak · finish today to keep it"
+                         : "Start your streak today")
                         .font(.qText(11.5))
                         .foregroundStyle(Theme.ink2)
-                    QIcon(name: "flame", size: 13, color: Theme.accent)
+                    QIcon(name: "flame", size: 13,
+                          color: streakDays > 0 ? Theme.accent : Theme.ink3)
                 }
                 .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)

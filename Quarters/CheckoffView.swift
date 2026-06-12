@@ -4,6 +4,7 @@ import SwiftData
 struct CheckoffView: View {
     @Environment(\.modelContext) private var context
     @Bindable var session: Session
+    @Query private var dailyLogs: [DailyLog]
 
     private var sortedTasks: [FocusTask] {
         session.tasks.sorted { $0.createdAt < $1.createdAt }
@@ -97,6 +98,11 @@ struct CheckoffView: View {
         session.pointsAwarded = pts
         session.endedAt = .now
         session.status = .completed
+
+        let todayStart = Calendar.current.startOfDay(for: .now)
+        if !dailyLogs.contains(where: { Calendar.current.startOfDay(for: $0.date) == todayStart }) {
+            context.insert(DailyLog())
+        }
 
         for task in session.tasks where !task.isDone {
             task.session = nil

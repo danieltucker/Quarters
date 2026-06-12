@@ -21,4 +21,16 @@ enum AppConfig {
     static func bonus(forBlocks n: Int) -> Int {
         points(forBlocks: n) - n * basePointsPerBlock
     }
+
+    static func streak(from logs: [DailyLog]) -> Int {
+        let calendar = Calendar.current
+        let days = Set(logs.map { calendar.startOfDay(for: $0.date) })
+        var streak = 0
+        var day = calendar.startOfDay(for: .now)
+        while days.contains(day) {
+            streak += 1
+            day = calendar.date(byAdding: .day, value: -1, to: day)!
+        }
+        return streak
+    }
 }

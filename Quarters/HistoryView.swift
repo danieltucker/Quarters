@@ -7,6 +7,7 @@ struct LedgerView: View {
     @Query(filter: #Predicate<Session> { $0.statusRaw == "completed" },
            sort: \Session.startedAt, order: .reverse) private var sessions: [Session]
     @Query(sort: \LedgerEntry.timestamp, order: .reverse) private var ledger: [LedgerEntry]
+    @Query private var dailyLogs: [DailyLog]
 
     // MARK: - Computed stats
 
@@ -21,19 +22,7 @@ struct LedgerView: View {
         ledger.filter { $0.delta > 0 }.reduce(0) { $0 + $1.delta }
     }
 
-    private var streakDays: Int {
-        let calendar = Calendar.current
-        var day = calendar.startOfDay(for: .now)
-        var streak = 0
-        while true {
-            let next = calendar.date(byAdding: .day, value: 1, to: day)!
-            let hasSession = sessions.contains { $0.startedAt >= day && $0.startedAt < next }
-            guard hasSession else { break }
-            streak += 1
-            day = calendar.date(byAdding: .day, value: -1, to: day)!
-        }
-        return streak
-    }
+    private var streakDays: Int { AppConfig.streak(from: dailyLogs) }
 
     // MARK: - Day grouping
 
