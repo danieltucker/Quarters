@@ -65,6 +65,7 @@ struct SetupView: View {
                                             )
                                             .scaleEffect(active ? 1.07 : 1)
                                             .contentShape(Rectangle())
+                                            .hoverLift(1.06)
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -270,5 +271,6 @@ struct TaskRow: View {
                     lineWidth: 1
                 )
         )
+        .hoverLift(1.0)   // shadow only; scaling rows in a list reads as jitter
     }
 }

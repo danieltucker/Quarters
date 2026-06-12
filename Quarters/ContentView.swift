@@ -74,24 +74,7 @@ struct ContentView: View {
     private var tabBar: some View {
         HStack(spacing: 4) {
             ForEach(AppTab.allCases, id: \.self) { t in
-                Button {
-                    tab = t
-                } label: {
-                    Text(t.rawValue)
-                        .font(.qText(13, weight: .semibold))
-                        .foregroundStyle(tab == t ? Theme.ink : Theme.ink2)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 7)
-                        .background {
-                            if tab == t {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Theme.card)
-                                    .qShadow()
-                            }
-                        }
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+                TabSegment(tab: t, isActive: tab == t) { tab = t }
             }
         }
         .padding(4)
@@ -102,6 +85,40 @@ struct ContentView: View {
         guard allRewards.isEmpty else { return }
         Reward.seedDefaults(into: context)
         try? context.save()
+    }
+}
+
+// MARK: - Tab segment
+// Owns hover state so inactive tabs brighten under the cursor.
+
+private struct TabSegment: View {
+    let tab: AppTab
+    let isActive: Bool
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Text(tab.rawValue)
+                .font(.qText(13, weight: .semibold))
+                .foregroundStyle(isActive || hovering ? Theme.ink : Theme.ink2)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 7)
+                .background {
+                    if isActive {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Theme.card)
+                            .qShadow()
+                    } else if hovering {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Theme.card.opacity(0.45))
+                    }
+                }
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .animation(.easeOut(duration: 0.12), value: hovering)
     }
 }
 
