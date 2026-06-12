@@ -120,26 +120,13 @@ struct RunningView: View {
             }
 
             // ── Footer (always visible) ───────────────────────────────
-            HStack {
-                Button(action: pause) {
-                    HStack(spacing: 8) {
-                        QIcon(name: "pause", size: 14, color: Theme.ink2)
-                        Text("Pause")
-                            .font(.qText(12.5))
-                            .foregroundStyle(Theme.ink2)
-                    }
-                }
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                Button(action: endEarly) {
-                    Text("End early — keep \(completedQuarters) coin\(completedQuarters == 1 ? "" : "s")")
-                        .font(.qText(12.5, weight: .semibold))
-                        .foregroundStyle(Theme.ink3)
-                }
-                .buttonStyle(.plain)
+            Button(action: endEarly) {
+                Text("End early — keep \(completedQuarters) coin\(completedQuarters == 1 ? "" : "s")")
+                    .font(.qText(12.5, weight: .semibold))
+                    .foregroundStyle(Theme.ink3)
             }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
             .padding(.top, 12)
         }
         .padding(.horizontal, 22)
@@ -160,12 +147,6 @@ struct RunningView: View {
         context.insert(task)
         task.session = session
         draft = ""
-    }
-
-    private func pause() {
-        // Pause is implemented as end-early for now; a dedicated pause state
-        // can be added without model changes when the feature is prioritised.
-        endEarly()
     }
 
     private func endEarly() {

@@ -131,8 +131,8 @@ struct QCoinChip: View {
 }
 
 // MARK: - QRing
-// Segmented timer ring. Each segment = (360 / total) − 5°.
-// Completed segments fill with accent; the active segment fills proportionally.
+// Continuous timer ring: a full-circle track with a single accent arc that
+// sweeps the whole session from 12 o'clock.
 
 struct QRing: View {
     var size: CGFloat = 200
@@ -143,33 +143,26 @@ struct QRing: View {
 
     var body: some View {
         Canvas { context, canvasSize in
-            let s        = canvasSize.width / size  // usually 1; supports GeometryReader scaling
-            let cx       = canvasSize.width  / 2
-            let cy       = canvasSize.height / 2
-            let r        = (canvasSize.width - thickness * s) / 2
-            let gapDeg   = 5.0
-            let segDeg   = 360.0 / Double(totalQuarters) - gapDeg
+            let s  = canvasSize.width / size  // usually 1; supports GeometryReader scaling
+            let cx = canvasSize.width  / 2
+            let cy = canvasSize.height / 2
+            let r  = (canvasSize.width - thickness * s) / 2
 
-            for i in 0..<totalQuarters {
-                let startDeg = Double(i) * (segDeg + gapDeg) + gapDeg / 2.0
+            // Continuous track — a full circle, so the ring is never
+            // disconnected at segment boundaries.
+            let track = Path(ellipseIn: CGRect(x: cx - r, y: cy - r,
+                                               width: r * 2, height: r * 2))
+            context.stroke(track, with: .color(Theme.line2), lineWidth: thickness * s)
 
-                // Track arc
-                drawArc(context: context, cx: cx, cy: cy, r: r,
-                        startDeg: startDeg, sweepDeg: segDeg,
-                        color: Theme.line2, lineWidth: thickness * s)
-
-                // Filled arc
-                if i < completedQuarters {
-                    drawArc(context: context, cx: cx, cy: cy, r: r,
-                            startDeg: startDeg, sweepDeg: segDeg,
-                            color: Theme.accent, lineWidth: thickness * s)
-                } else if i == completedQuarters {
-                    let sweep = segDeg * min(max(currentProgress, 0), 1)
-                    drawArc(context: context, cx: cx, cy: cy, r: r,
-                            startDeg: startDeg, sweepDeg: sweep,
-                            color: Theme.accent, lineWidth: thickness * s)
-                }
-            }
+            // One progress arc sweeping the whole session from 12 o'clock.
+            // The minimum sweep keeps an orange nub visible from the start.
+            let fraction = (Double(completedQuarters) + min(max(currentProgress, 0), 1))
+                           / Double(totalQuarters)
+            let capDeg = Double(thickness * s / (2 * r)) * 180 / .pi
+            let sweep = max(360 * min(fraction, 1), capDeg * 2 + 0.4)
+            drawArc(context: context, cx: cx, cy: cy, r: r,
+                    startDeg: 0, sweepDeg: sweep,
+                    color: Theme.accent, lineWidth: thickness * s)
         }
         .frame(width: size, height: size)
     }
