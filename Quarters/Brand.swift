@@ -234,20 +234,27 @@ struct QWordmark: View {
 }
 
 // MARK: - Quarter picker dial
-// 4 pie-slice tap targets; tapping slice n sets length to n quarters.
-// Shape-based (not Canvas) so wedge fills crossfade with animation.
+// Tapping slice n sets length to n quarters. The fill is a single
+// animatable pie shape — one path means no antialiased seams between
+// wedges, and animating the sweep reads as liquid pouring around the dial.
 
-private struct QuarterWedge: Shape {
-    let index: Int   // 0–3; wedge 0 = 12 → 3 o'clock
+private struct PieFill: Shape {
+    var fraction: Double   // 0…1 of the full circle, from 12 o'clock
+
+    var animatableData: Double {
+        get { fraction }
+        set { fraction = newValue }
+    }
 
     func path(in rect: CGRect) -> Path {
+        guard fraction > 0.001 else { return Path() }
         let c = CGPoint(x: rect.midX, y: rect.midY)
         let r = min(rect.width, rect.height) / 2 - 1.5  // inset so ring stroke isn't clipped
         var p = Path()
         p.move(to: c)
         p.addArc(center: c, radius: r,
-                 startAngle: .degrees(Double(index) * 90 - 90),
-                 endAngle: .degrees(Double(index) * 90),
+                 startAngle: .degrees(-90),
+                 endAngle: .degrees(-90 + 360 * min(fraction, 1)),
                  clockwise: false)
         p.closeSubpath()
         return p
@@ -261,10 +268,11 @@ struct QuarterPicker: View {
 
     var body: some View {
         ZStack {
-            ForEach(0..<4, id: \.self) { i in
-                QuarterWedge(index: i)
-                    .fill(i < quarters ? Theme.accent : Theme.card)
-            }
+            Circle()
+                .inset(by: 1.5)
+                .fill(Theme.card)
+            PieFill(fraction: Double(quarters) / 4)
+                .fill(Theme.accent)
             Circle()
                 .strokeBorder(Theme.ink, lineWidth: 2)
         }
@@ -273,7 +281,9 @@ struct QuarterPicker: View {
         .scaleEffect(hovering ? 1.03 : 1)
         .shadow(color: .black.opacity(hovering ? 0.10 : 0.05),
                 radius: hovering ? 8 : 4, y: 2)
-        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: quarters)
+        // Mild underdamping lets the fill slosh slightly past the target
+        // and settle back — the liquid pour.
+        .animation(.spring(response: 0.55, dampingFraction: 0.68), value: quarters)
         .animation(.easeOut(duration: 0.15), value: hovering)
         .onHover { hovering = $0 }
         .onTapGesture { location in
