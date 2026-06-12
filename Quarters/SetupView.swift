@@ -146,7 +146,7 @@ struct SetupView: View {
                 // Streak hint
                 HStack(spacing: 4) {
                     Text(streakDays > 0
-                         ? "\(streakDays)-day streak · finish today to keep it"
+                         ? "\(streakDays)-day streak · +\(String(format: "%g", AppConfig.streakBonusPercent(forDays: streakDays)))% coins · finish today to keep it"
                          : "Start your streak today")
                         .font(.qText(11.5))
                         .foregroundStyle(Theme.ink2)

@@ -16,7 +16,17 @@ struct CheckoffView: View {
         }
     }
 
-    private var totalPoints: Int { session.pointsDue + taskBonus }
+    // Today counts toward the streak even though its DailyLog isn't inserted
+    // until collect() — finishing this session is what extends the streak.
+    private var streakDays: Int {
+        AppConfig.streak(from: dailyLogs, includingToday: true)
+    }
+
+    private var streakBonus: Int {
+        AppConfig.streakBonus(onPoints: session.pointsDue + taskBonus, streakDays: streakDays)
+    }
+
+    private var totalPoints: Int { session.pointsDue + taskBonus + streakBonus }
 
     private var breakdownLine: String? {
         let sessionPts = session.pointsDue
@@ -25,12 +35,14 @@ struct CheckoffView: View {
         var parts: [String] = []
         if session.wasEndedEarly {
             if taskBonus > 0 { parts.append("\(sessionPts) session + \(taskBonus) tasks") }
+            if streakBonus > 0 { parts.append("+\(streakBonus) streak") }
             let suffix = " · bonus forfeited"
             return parts.isEmpty ? suffix.trimmingCharacters(in: .whitespaces)
-                                 : "\(parts[0])\(suffix)"
+                                 : "\(parts.joined(separator: " · "))\(suffix)"
         }
         if bonus > 0 { parts.append("\(base) base + \(bonus) bonus") }
         if taskBonus > 0 { parts.append("+\(taskBonus) tasks") }
+        if streakBonus > 0 { parts.append("+\(streakBonus) streak") }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
