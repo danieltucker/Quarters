@@ -26,13 +26,11 @@ struct ContentView: View {
             // TitlebarConfigurator gives the window an empty unified toolbar,
             // which makes the title bar ~52pt tall with the traffic lights
             // vertically centered in it. This strip matches that height so
-            // the wordmark and coin chip center on the same line.
+            // the coin chip centers on the same line.
             HStack {
-                QWordmark(size: 17)
                 Spacer()
                 QCoinChip(balance: balance)
             }
-            .padding(.leading, 76)
             .padding(.trailing, 18)
             .frame(height: 52)
             .padding(.bottom, 2)
