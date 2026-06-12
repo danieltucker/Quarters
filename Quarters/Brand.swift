@@ -106,12 +106,16 @@ struct QCoinChip: View {
             Text("\(balance)")
                 .font(.qMono(13.5, weight: .semibold))
                 .foregroundStyle(Theme.ink)
+                .contentTransition(.numericText(value: Double(balance)))
+                .animation(.spring(response: 0.5, dampingFraction: 0.8), value: balance)
         }
         .padding(.vertical, 4)
         .padding(.leading, 6)
         .padding(.trailing, 12)
         .background(Theme.coinSoft, in: Capsule())
-        .overlay(Capsule().strokeBorder(Theme.coinDeep, lineWidth: 0.5))
+        // 1pt: a 0.5pt hairline antialiases away on non-retina displays,
+        // which read as a partially missing border.
+        .overlay(Capsule().strokeBorder(Theme.coinDeep.opacity(0.65), lineWidth: 1))
     }
 }
 
