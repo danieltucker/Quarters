@@ -32,13 +32,15 @@ struct SetupView: View {
                             Text("\(quarters) quarter\(quarters == 1 ? "" : "s")")
                                 .font(.qDisplay(24))
                                 .foregroundStyle(Theme.ink)
+                                .contentTransition(.numericText(value: Double(quarters)))
 
-                            Text("\(minutes) minutes · mints ")
+                            (Text("\(minutes) minutes · mints ")
                                 .font(.qText(13))
                                 .foregroundStyle(Theme.ink2)
                             + Text("\(coinCount) coin\(coinCount == 1 ? "" : "s")")
                                 .font(.qText(13, weight: .bold))
-                                .foregroundStyle(Theme.ink)
+                                .foregroundStyle(Theme.ink))
+                                .contentTransition(.numericText(value: Double(coinCount)))
 
                             // Duration chips
                             HStack(spacing: 6) {
@@ -61,6 +63,8 @@ struct SetupView: View {
                                                         lineWidth: 1
                                                     )
                                             )
+                                            .scaleEffect(active ? 1.07 : 1)
+                                            .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -72,6 +76,8 @@ struct SetupView: View {
                     .padding(16)
                     .background(Theme.card2, in: RoundedRectangle(cornerRadius: 16))
                     .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.line, lineWidth: 1))
+                    .qShadow()
+                    .animation(.spring(response: 0.32, dampingFraction: 0.75), value: quarters)
                     .padding(.bottom, 20)
 
                     // ── Goals ─────────────────────────────────────────────

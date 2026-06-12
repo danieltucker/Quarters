@@ -235,37 +235,47 @@ struct QWordmark: View {
 
 // MARK: - Quarter picker dial
 // 4 pie-slice tap targets; tapping slice n sets length to n quarters.
+// Shape-based (not Canvas) so wedge fills crossfade with animation.
+
+private struct QuarterWedge: Shape {
+    let index: Int   // 0–3; wedge 0 = 12 → 3 o'clock
+
+    func path(in rect: CGRect) -> Path {
+        let c = CGPoint(x: rect.midX, y: rect.midY)
+        let r = min(rect.width, rect.height) / 2 - 1.5  // inset so ring stroke isn't clipped
+        var p = Path()
+        p.move(to: c)
+        p.addArc(center: c, radius: r,
+                 startAngle: .degrees(Double(index) * 90 - 90),
+                 endAngle: .degrees(Double(index) * 90),
+                 clockwise: false)
+        p.closeSubpath()
+        return p
+    }
+}
 
 struct QuarterPicker: View {
     @Binding var quarters: Int   // 1–4
     var size: CGFloat = 120
+    @State private var hovering = false
 
     var body: some View {
-        Canvas { context, canvasSize in
-            let c  = canvasSize.width / 2
-            let r  = c - 1.5   // inset so outer stroke isn't clipped
-
-            // 4 flush wedges; wedge 0 = top-right (12 → 3 o'clock)
-            for i in 0..<4 {
-                let a0 = Double(i) * 90.0 - 90.0
-                let a1 = a0 + 90.0
-
-                var path = Path()
-                path.move(to: CGPoint(x: c, y: c))
-                path.addArc(center: CGPoint(x: c, y: c), radius: r,
-                            startAngle: .degrees(a0), endAngle: .degrees(a1), clockwise: false)
-                path.closeSubpath()
-
-                context.fill(path, with: .color(i < quarters ? Theme.accent : Theme.card))
+        ZStack {
+            ForEach(0..<4, id: \.self) { i in
+                QuarterWedge(index: i)
+                    .fill(i < quarters ? Theme.accent : Theme.card)
             }
-
-            // Outer ring drawn over wedges so it reads as one unified face
-            let ring = Path(ellipseIn: CGRect(x: c - r, y: c - r, width: r * 2, height: r * 2))
-            context.stroke(ring, with: .color(Theme.ink),
-                           style: StrokeStyle(lineWidth: 2.0))
+            Circle()
+                .strokeBorder(Theme.ink, lineWidth: 2)
         }
         .frame(width: size, height: size)
         .contentShape(Circle())
+        .scaleEffect(hovering ? 1.03 : 1)
+        .shadow(color: .black.opacity(hovering ? 0.10 : 0.05),
+                radius: hovering ? 8 : 4, y: 2)
+        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: quarters)
+        .animation(.easeOut(duration: 0.15), value: hovering)
+        .onHover { hovering = $0 }
         .onTapGesture { location in
             let dx = location.x - size / 2
             let dy = location.y - size / 2
