@@ -94,6 +94,8 @@ struct CheckoffView: View {
                 ? "\(session.completedBlocksAtEnd)-quarter session (ended early)"
                 : "\(session.blockCount)-quarter session"
             context.insert(LedgerEntry(delta: pts, reason: reason))
+            NotificationCenter.default.post(name: .qCoinsCollected, object: nil,
+                                            userInfo: ["amount": pts])
         }
         session.pointsAwarded = pts
         session.endedAt = .now
