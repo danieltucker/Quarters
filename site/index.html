@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quarters — every quarter-hour mints a quarter</title>
+<meta name="description" content="Quarters turns focus into currency. Sit down for 15 minutes, earn a coin. Spend coins on rewards you choose. Focus app for macOS — iOS and web coming." />
+<meta property="og:title" content="Quarters — every quarter-hour mints a quarter" />
+<meta property="og:description" content="Quarters turns focus into currency. Sit down for 15 minutes, earn a coin. Spend coins on rewards you choose." />
+<meta property="og:type" content="website" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23F5EFE2' stroke='%2333291C' stroke-width='2'/%3E%3Cpath d='M12 12 L12 2 A10 10 0 0 1 22 12 Z' fill='%23C05B2B'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===== SVG sprite ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-mark" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="var(--q-ink)" stroke-width="2"></circle>
+      <path d="M12 12 L12 2 A10 10 0 0 1 22 12 Z" fill="var(--q-accent)"></path>
+      <line x1="12" y1="12" x2="12" y2="2" stroke="var(--q-ink)" stroke-width="1.5"></line>
+      <line x1="12" y1="12" x2="22" y2="12" stroke="var(--q-ink)" stroke-width="1.5"></line>
+    </symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="11" fill="var(--q-coin)"></circle>
+      <circle cx="12" cy="12" r="11" fill="none" stroke="var(--q-coin-deep)" stroke-width="1.6"></circle>
+      <circle cx="12" cy="12" r="7.5" fill="none" stroke="var(--q-coin-deep)" stroke-width="1" opacity="0.55"></circle>
+      <path d="M12 12 L12 1.6 A10.4 10.4 0 0 1 22.4 12 Z" fill="var(--q-coin-deep)" opacity="0.4"></path>
+    </symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5-10-6.5Z"></path></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8.5 5.5v13M15.5 5.5v13"></path></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"></path></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 21c-3.9 0-6.5-2.4-6.5-6 0-2.6 1.6-4.4 3-6 .5 1 .8 1.5 1.7 2.2C10.5 8.6 11.5 5.5 14 3c-.3 2.4.8 3.7 2.2 5.4 1.3 1.6 2.3 3.1 2.3 5.6 0 4.4-2.6 7-6.5 7Z"></path></symbol>
+    <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M5 9h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V9Z"></path><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16"></path><path d="M8 5.5c0-1 .8-1 .8-2M11.5 5.5c0-1 .8-1 .8-2"></path></symbol>
+    <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="13" cy="4.5" r="1.9"></circle><path d="M12.5 8.5 10 12l2.5 3-1 5"></path><path d="M12.5 8.5c1.8.4 2.3 2.2 4 2.5"></path><path d="M10 12c-1.6.5-2.3 1.6-2.5 3.2"></path><path d="M12.5 15.2 15 17l1 3.5"></path></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><ellipse cx="12" cy="12" rx="3.8" ry="8.5"></ellipse><path d="M3.8 12h16.4"></path></symbol>
+    <symbol id="i-game" viewBox="0 0 24 24"><path d="M7 8h10a4.5 4.5 0 0 1 4.4 5.4l-.7 3.2a2.6 2.6 0 0 1-4.6 1l-1.3-1.6h-5.6L7.9 17.6a2.6 2.6 0 0 1-4.6-1l-.7-3.2A4.5 4.5 0 0 1 7 8Z"></path><path d="M8.5 11v3M7 12.5h3"></path><circle cx="15.6" cy="11.6" r="0.4"></circle><circle cx="17.6" cy="13.4" r="0.4"></circle></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><rect x="4.5" y="9" width="15" height="11" rx="1.5"></rect><path d="M4 6.5h16V9H4z"></path><path d="M12 6.5V20"></path><path d="M12 6.5c-3.2 0-4.6-1.3-4.2-2.8.4-1.4 3-1.2 4.2 2.8Zm0 0c3.2 0 4.6-1.3 4.2-2.8-.4-1.4-3-1.2-4.2 2.8Z"></path></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"></path></symbol>
+  </defs>
+</svg>
+
+<!-- ===== nav ===== -->
+<header class="wrap nav">
+  <a class="brand" href="#">
+    <svg class="icon" width="24" height="24"><use href="#i-mark"></use></svg>
+    <b>Quarters</b>
+  </a>
+  <nav class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#features">Rewards</a>
+    <a class="btn" href="#download">Download for Mac</a>
+  </nav>
+</header>
+
+<!-- ===== hero ===== -->
+<section class="wrap hero">
+  <div class="eyebrow">
+    <svg class="icon" width="15" height="15"><use href="#i-coin"></use></svg>
+    Focus app for macOS — iOS &amp; web coming
+  </div>
+  <h1>Every quarter-hour<br /><span class="accent">mints a quarter.</span></h1>
+  <p>Quarters turns focus into currency. Sit down for 15 minutes, earn a coin. Spend coins on rewards you choose — coffee, a walk, guilt-free gaming.</p>
+  <div class="hero-ctas">
+    <a class="btn lg" href="#download">
+      <svg class="icon" width="16" height="16" fill="currentColor" stroke="none"><use href="#i-play"></use></svg>
+      Download for Mac
+    </a>
+    <a class="btn lg ghost" href="#how">See how it works</a>
+  </div>
+  <div class="hero-note">Free while in beta · No account required</div>
+</section>
+
+<!-- ===== hero app shots ===== -->
+<div class="shots" aria-hidden="true">
+
+  <!-- In session (left) -->
+  <div class="shot side l"><div class="win">
+    <div class="titlebar">
+      <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+      <div class="brand"><svg class="icon" width="20" height="20"><use href="#i-mark"></use></svg><b>Quarters</b></div>
+      <div class="coin-chip"><svg class="icon" width="17" height="17"><use href="#i-coin"></use></svg>50</div>
+    </div>
+    <div class="tabs"><span class="on">Focus</span><span>Rewards</span><span>Ledger</span></div>
+    <div class="win-body">
+      <div class="ring-wrap">
+        <svg width="216" height="216" viewBox="0 0 216 216" fill="none" stroke-linecap="round" stroke-width="11">
+          <path d="M112.47 5.6 A102.5 102.5 0 0 1 112.47 210.4" stroke="var(--q-line2)"></path>
+          <path d="M103.53 210.4 A102.5 102.5 0 0 1 103.53 5.6" stroke="var(--q-line2)"></path>
+          <path d="M112.47 5.6 A102.5 102.5 0 0 1 112.47 210.4" stroke="var(--q-accent)"></path>
+          <path d="M103.53 210.4 A102.5 102.5 0 0 1 6.27 120.5" stroke="var(--q-accent)"></path>
+        </svg>
+        <div class="ring-center"><div class="time">08:08</div><div class="q">Quarter 2 of 2</div></div>
+      </div>
+      <div class="ring-cap">One coin minted — the second is 8 minutes away.</div>
+      <div style="margin-top: 18px;">
+        <div class="sec-label"><b>Session goals</b><i>1 of 4 done</i></div>
+        <div class="goals">
+          <div class="goal done"><span class="box"><svg class="icon" width="12" height="12" fill="none" stroke="var(--q-card)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#i-check"></use></svg></span><span class="t">Check Teams messages</span></div>
+          <div class="goal"><span class="box"></span><span class="t">Confirm Travelers status</span></div>
+          <div class="goal"><span class="box"></span><span class="t">Respond to Curtis</span></div>
+          <div class="goal"><span class="box"></span><span class="t">Create ENT snapshot</span></div>
+        </div>
+      </div>
+      <div class="session-foot">
+        <div class="pause"><svg class="icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><use href="#i-pause"></use></svg> Pause</div>
+        <div class="end">End early — keep 1 coin</div>
+      </div>
+    </div>
+  </div></div>
+
+  <!-- Setup (center) -->
+  <div class="shot main"><div class="win">
+    <div class="titlebar">
+      <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+      <div class="brand"><svg class="icon" width="20" height="20"><use href="#i-mark"></use></svg><b>Quarters</b></div>
+      <div class="coin-chip"><svg class="icon" width="17" height="17"><use href="#i-coin"></use></svg>50</div>
+    </div>
+    <div class="tabs"><span class="on">Focus</span><span>Rewards</span><span>Ledger</span></div>
+    <div class="win-body">
+      <div class="sec-label"><b>How long can you give?</b><i>2 coins + streak bonus</i></div>
+      <div class="picker-card">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <path d="M60 60 L62.72 8.07 A52 52 0 0 1 111.93 57.28 Z" fill="var(--q-accent)" stroke="var(--q-accent-deep)" stroke-width="1.5" stroke-linejoin="round"></path>
+          <path d="M60 60 L111.93 62.72 A52 52 0 0 1 62.72 111.93 Z" fill="var(--q-accent)" stroke="var(--q-accent-deep)" stroke-width="1.5" stroke-linejoin="round"></path>
+          <path d="M60 60 L57.28 111.93 A52 52 0 0 1 8.07 62.72 Z" fill="var(--q-card)" stroke="var(--q-line2)" stroke-width="1.5" stroke-linejoin="round"></path>
+          <path d="M60 60 L8.07 57.28 A52 52 0 0 1 57.28 8.07 Z" fill="var(--q-card)" stroke="var(--q-line2)" stroke-width="1.5" stroke-linejoin="round"></path>
+          <circle cx="60" cy="60" r="13" fill="var(--q-bg)" stroke="var(--q-line2)" stroke-width="1.5"></circle>
+          <text x="60" y="64.5" text-anchor="middle" font-size="13" font-weight="700" fill="var(--q-ink)" font-family="Spline Sans Mono, monospace">2</text>
+        </svg>
+        <div>
+          <h3>2 quarters</h3>
+          <p>30 minutes · mints <b>2 coins</b></p>
+          <div class="dur-chips"><span>15m</span><span class="on">30m</span><span>45m</span><span>60m</span></div>
+        </div>
+      </div>
+      <div style="margin-top: 20px;">
+        <div class="sec-label"><b>What will you get done?</b><i>+1 coin per task</i></div>
+        <div class="goal-add">
+          <div class="field">Add a goal…</div>
+          <div class="plus"><svg class="icon" width="16" height="16" fill="none" stroke="var(--q-ink2)" stroke-width="1.75" stroke-linecap="round"><use href="#i-plus"></use></svg></div>
+        </div>
+        <div class="goals">
+          <div class="goal"><span class="box"></span><span class="t">Respond to Curtis</span><span class="carried">carried</span></div>
+          <div class="goal"><span class="box"></span><span class="t">Create ENT snapshot</span><span class="carried">carried</span></div>
+          <div class="goal"><span class="box"></span><span class="t">Double check insuranceSpoken is passed in</span><span class="carried">carried</span></div>
+        </div>
+      </div>
+      <div class="start-btn">
+        <svg class="icon" width="15" height="15" fill="currentColor" stroke="none"><use href="#i-play"></use></svg>
+        Start 30-minute session
+      </div>
+      <div class="streak-note">3-day streak · finish today to keep it <svg class="icon" width="13" height="13" fill="none" stroke="var(--q-accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-flame"></use></svg></div>
+    </div>
+  </div></div>
+
+  <!-- Rewards (right) -->
+  <div class="shot side r"><div class="win">
+    <div class="titlebar">
+      <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+      <div class="brand"><svg class="icon" width="20" height="20"><use href="#i-mark"></use></svg><b>Quarters</b></div>
+      <div class="coin-chip"><svg class="icon" width="17" height="17"><use href="#i-coin"></use></svg>50</div>
+    </div>
+    <div class="tabs"><span>Focus</span><span class="on">Rewards</span><span>Ledger</span></div>
+    <div class="win-body">
+      <div class="rw-head"><h3>Spend your coins</h3><span class="edit">Edit</span></div>
+      <div class="rw-grid">
+        <div class="rw-card">
+          <div class="tile"><svg class="icon" width="20" height="20" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-coffee"></use></svg></div>
+          <div><h4>Coffee</h4><p>Brew one, savor it</p></div>
+          <div class="buy"><svg class="icon" width="15" height="15"><use href="#i-coin"></use></svg>20</div>
+        </div>
+        <div class="rw-card">
+          <div class="tile"><svg class="icon" width="20" height="20" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-walk"></use></svg></div>
+          <div><h4>15-min walk</h4><p>Cheap on purpose. Go.</p></div>
+          <div class="buy"><svg class="icon" width="15" height="15"><use href="#i-coin"></use></svg>25</div>
+        </div>
+        <div class="rw-card">
+          <div class="tile"><svg class="icon" width="20" height="20" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-globe"></use></svg></div>
+          <div><h4>15 min browsing</h4><p>Guilt-free rabbit holes</p></div>
+          <div class="buy"><svg class="icon" width="15" height="15"><use href="#i-coin"></use></svg>35</div>
+        </div>
+        <div class="rw-card">
+          <div class="tile"><svg class="icon" width="20" height="20" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-game"></use></svg></div>
+          <div><h4>15 min gaming</h4><p>The premium vice</p></div>
+          <div class="buy"><svg class="icon" width="15" height="15"><use href="#i-coin"></use></svg>40</div>
+        </div>
+        <div class="rw-card">
+          <div class="tile"><svg class="icon" width="20" height="20" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-gift"></use></svg></div>
+          <div><h4>Ayn Thor Pro</h4><p>Handheld emulator</p></div>
+          <div class="bar"><i style="width: 5.3%;"></i></div>
+          <div class="bar-cap"><span>50 / 950</span><span style="font-weight: 600;">saving up</span></div>
+        </div>
+      </div>
+      <div class="rw-hint">
+        <svg class="icon" width="20" height="20"><use href="#i-coin"></use></svg>
+        <div><b>Two more quarters</b> covers that coffee — about 30 focused minutes.</div>
+      </div>
+    </div>
+  </div></div>
+</div>
+<div class="fade"></div>
+
+<!-- ===== how it works ===== -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="how-head">
+      <div class="kicker">How it works</div>
+      <h2>An honest economy for your attention</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div><h3>Commit your quarters</h3><p>Pick one to four quarter-hours and name what you'll get done. Longer commitments earn a bonus over chained short ones.</p></div></div>
+      <div class="step"><div class="n">2</div><div><h3>Focus, mint coins</h3><p>A quiet timer counts each quarter. Finish a quarter, mint a coin. Check off a task, earn one more.</p></div></div>
+      <div class="step"><div class="n">3</div><div><h3>Spend deliberately</h3><p>You set the rewards and the prices. The vice you'd reach for anyway becomes something you've earned.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== features ===== -->
+<section class="features wrap" id="features">
+  <div class="feat-grid">
+    <div class="feat">
+      <div class="tile"><svg class="icon" width="23" height="23" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-flame"></use></svg></div>
+      <h3>Streaks that forgive</h3>
+      <p>A daily streak rewards showing up — and one missed day bends it, never breaks it. The coach is warm, not cruel.</p>
+    </div>
+    <div class="feat">
+      <div class="tile"><svg class="icon" width="23" height="23" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-gift"></use></svg></div>
+      <h3>Your rewards, your prices</h3>
+      <p>Coffee at 20, gaming at 40, that handheld emulator at 950. Save up for the big stuff like you mean it.</p>
+    </div>
+    <div class="feat">
+      <div class="tile"><svg class="icon" width="23" height="23" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-menu"></use></svg></div>
+      <h3>Lives in your menu bar</h3>
+      <p>A compact companion window and a menu-bar timer. Your quarters follow you to iOS and the web next.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== closing ===== -->
+<section class="closing dark" id="download">
+  <div class="wrap">
+    <div class="mark"><svg class="icon" width="64" height="64"><use href="#i-mark"></use></svg></div>
+    <h2>Your next quarter starts now.</h2>
+    <p>Fifteen minutes. One coin. Worth it.</p>
+    <a class="btn lg" href="#">
+      <svg class="icon" width="16" height="16" fill="currentColor" stroke="none"><use href="#i-play"></use></svg>
+      Download for Mac
+    </a>
+    <div class="footer">
+      <span class="brand"><svg class="icon" width="16" height="16"><use href="#i-mark"></use></svg><b style="font-size: 13px; font-family: var(--font-display);">Quarters</b></span>
+      <span>© 2026 Quarters · Privacy · Contact</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,129 @@
+{
+  "" : {
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Quarters-primary.dia",
+    "emit-module-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Quarters-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Quarters-primary-emit-module.dia",
+    "pch" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Quarters-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Quarters-primary.swiftdeps"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/AppConfig.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/AppConfig.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/AppConfig.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/AppConfig.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/AppConfig.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/AppConfig.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/AppConfig.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/AppConfig.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/AppConfig~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/CheckoffView.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/CheckoffView.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/CheckoffView.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/CheckoffView.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/CheckoffView.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/CheckoffView.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/CheckoffView.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/CheckoffView.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/CheckoffView~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/Components.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Components.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Components.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Components.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Components.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Components.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Components.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Components.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Components~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/ContentView.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/ContentView.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/ContentView.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/ContentView.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/ContentView.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/ContentView.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/ContentView~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/FocusForgeApp.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/FocusForgeApp.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/FocusForgeApp.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/FocusForgeApp.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/FocusForgeApp.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/FocusForgeApp.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/FocusForgeApp.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/FocusForgeApp.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/FocusForgeApp~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/HistoryView.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/HistoryView.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/HistoryView.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/HistoryView.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/HistoryView.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/HistoryView.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/HistoryView.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/HistoryView.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/HistoryView~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/Models.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Models.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Models.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Models.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Models.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Models.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Models.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Models.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Models~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/RewardsView.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RewardsView.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RewardsView.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RewardsView.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RewardsView.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RewardsView.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RewardsView.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RewardsView.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RewardsView~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/RunningView.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RunningView.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RunningView.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RunningView.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RunningView.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RunningView.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RunningView.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RunningView.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/RunningView~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/SetupView.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/SetupView.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/SetupView.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/SetupView.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/SetupView.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/SetupView.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/SetupView.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/SetupView.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/SetupView~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/Support.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Support.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Support.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Support.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Support.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Support.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Support.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Support.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Support~partial.swiftmodule"
+  },
+  "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/Theme.swift" : {
+    "const-values" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Theme.swiftconstvalues",
+    "dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Theme.d",
+    "diagnostics" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Theme.dia",
+    "index-unit-output-path" : "/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Theme.o",
+    "llvm-bc" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Theme.bc",
+    "object" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Theme.o",
+    "swift-dependencies" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Theme.swiftdeps",
+    "swiftmodule" : "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/build/Quarters.build/Debug/Quarters.build/Objects-normal/x86_64/Theme~partial.swiftmodule"
+  }
+}

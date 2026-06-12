@@ -1,0 +1,48 @@
+{
+  "source": "/Users/danieltucker/Library/Developer/Xcode/UntitledProjects/Untitled Project/Quarters/CheckoffView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Collect points",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 73
+        }
+      },
+      {
+        "comment": "",
+        "key": "Session ended early",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 40
+        }
+      },
+      {
+        "comment": "",
+        "key": "Time's up",
+        "location": {
+          "startingColumn": 70,
+          "startingLine": 40
+        }
+      },
+      {
+        "comment": "",
+        "key": "+%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 44
+        }
+      },
+      {
+        "comment": "",
+        "key": "pts",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 47
+        }
+      }
+    ]
+  },
+  "version": 1
+}
