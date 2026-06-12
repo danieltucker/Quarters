@@ -10,7 +10,7 @@ struct SetupView: View {
            sort: \FocusTask.createdAt) private var backlog: [FocusTask]
 
     private var minutes: Int { quarters * 15 }
-    private var coinCount: Int { quarters }   // 1 coin per completed quarter
+    private var coinCount: Int { AppConfig.points(forBlocks: quarters) }
 
     var body: some View {
         ScrollView {
