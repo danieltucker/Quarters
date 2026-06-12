@@ -86,12 +86,13 @@ extension Font {
     }
 
     // Spline Sans Mono — timer, coin counts, durations
+    // Variant prefix is SplineSansMonoRoman (nameID 25), not SplineSansMono.
     static func qMono(_ size: CGFloat, weight: Weight = .regular) -> Font {
         let name: String
         switch weight {
-        case .semibold, .bold, .heavy: name = "SplineSansMono-SemiBold"
-        case .medium: name = "SplineSansMono-Medium"
-        default: name = "SplineSansMono-Regular"
+        case .semibold, .bold, .heavy: name = "SplineSansMonoRoman-SemiBold"
+        case .medium: name = "SplineSansMonoRoman-Medium"
+        default: name = "SplineSansMono-Regular"   // nameID 6 default instance
         }
         return .custom(name, size: size)
     }
