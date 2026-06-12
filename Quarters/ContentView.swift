@@ -29,7 +29,8 @@ struct ContentView: View {
             }
             .padding(.leading, 80)   // clear traffic lights (close/min/max end ~x=64)
             .padding(.trailing, 18)
-            .padding(.vertical, 9)
+            .padding(.top, 7)        // vertically center wordmark on the traffic lights
+            .padding(.bottom, 10)
 
             // ── Tab switcher ─────────────────────────────────────────────
             tabBar
@@ -58,6 +59,9 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(Theme.bg)
+        // .hiddenTitleBar still reserves the title bar strip as safe area;
+        // extend into it so the header row sits beside the traffic lights.
+        .ignoresSafeArea(.container, edges: .top)
         .onAppear(perform: seedRewardsIfNeeded)
     }
 
