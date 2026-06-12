@@ -150,11 +150,9 @@ struct QRing: View {
                             color: Theme.accent, lineWidth: thickness * s)
                 } else if i == completedQuarters {
                     let sweep = segDeg * min(max(currentProgress, 0), 1)
-                    if sweep > 0.5 {
-                        drawArc(context: context, cx: cx, cy: cy, r: r,
-                                startDeg: startDeg, sweepDeg: sweep,
-                                color: Theme.accent, lineWidth: thickness * s)
-                    }
+                    drawArc(context: context, cx: cx, cy: cy, r: r,
+                            startDeg: startDeg, sweepDeg: sweep,
+                            color: Theme.accent, lineWidth: thickness * s)
                 }
             }
         }
@@ -164,11 +162,17 @@ struct QRing: View {
     private func drawArc(context: GraphicsContext, cx: CGFloat, cy: CGFloat,
                          r: CGFloat, startDeg: Double, sweepDeg: Double,
                          color: Color, lineWidth: CGFloat) {
-        guard sweepDeg > 0.5 else { return }
+        // Round caps extend half the stroke width past each endpoint, which
+        // bulges into the inter-segment gaps. Inset both endpoints by the
+        // cap radius so the caps land exactly on the segment boundaries.
+        let capDeg = Double(lineWidth / (2 * r)) * 180 / .pi
+        let from = startDeg + capDeg
+        let to   = startDeg + sweepDeg - capDeg
+        guard to > from else { return }
         let center = CGPoint(x: cx, y: cy)
         // Design origin = 12 o'clock; SwiftUI 0° = 3 o'clock → offset by -90
-        let start = Angle.degrees(startDeg - 90)
-        let end   = Angle.degrees(startDeg + sweepDeg - 90)
+        let start = Angle.degrees(from - 90)
+        let end   = Angle.degrees(to - 90)
         var path = Path()
         // clockwise: false = visually clockwise due to SwiftUI's flipped Y axis
         path.addArc(center: center, radius: r, startAngle: start, endAngle: end, clockwise: false)
