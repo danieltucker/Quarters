@@ -95,6 +95,7 @@ struct ContentView: View {
     private func seedRewardsIfNeeded() {
         guard allRewards.isEmpty else { return }
         Reward.seedDefaults(into: context)
+        try? context.save()
     }
 }
 
