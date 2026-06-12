@@ -259,17 +259,6 @@ struct QuarterPicker: View {
             let ring = Path(ellipseIn: CGRect(x: c - r, y: c - r, width: r * 2, height: r * 2))
             context.stroke(ring, with: .color(Theme.ink),
                            style: StrokeStyle(lineWidth: 2.0))
-
-            // Radial dividers at 12, 3, 6, 9 o'clock
-            for deg in [-90.0, 0.0, 90.0, 180.0] {
-                let rad = deg * Double.pi / 180.0
-                var line = Path()
-                line.move(to: CGPoint(x: c, y: c))
-                line.addLine(to: CGPoint(x: c + r * CGFloat(cos(rad)),
-                                         y: c + r * CGFloat(sin(rad))))
-                context.stroke(line, with: .color(Theme.ink),
-                               style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
-            }
         }
         .frame(width: size, height: size)
         .contentShape(Circle())
