@@ -5,8 +5,11 @@ import UserNotifications
 @main
 struct FocusForgeApp: App {
 
+    private let notificationDelegate = NotificationDelegate()
+
     init() {
         Fonts.registerBundled()
+        UNUserNotificationCenter.current().delegate = notificationDelegate
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 

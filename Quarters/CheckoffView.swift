@@ -97,6 +97,7 @@ struct CheckoffView: View {
         .padding(.horizontal, 22)
         .padding(.top, 8)
         .padding(.bottom, 22)
+        .onAppear(perform: Notifications.clearDelivered)
     }
 
     private func collect() {

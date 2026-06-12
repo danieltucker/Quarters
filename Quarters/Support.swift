@@ -87,4 +87,23 @@ enum Notifications {
     static func cancelSessionEnd() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [sessionEndId])
     }
+
+    /// Once the user is looking at the checkoff screen, the session-end
+    /// banner in Notification Center is stale — clear it.
+    static func clearDelivered() {
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+    }
+}
+
+/// Without a delegate, notifications are silently suppressed while the app
+/// is frontmost — so a session ending with the window hidden or minimized
+/// showed nothing. Present the banner regardless; the in-app chime already
+/// covers sound, so .sound is deliberately omitted to avoid doubling up.
+final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                            willPresent notification: UNNotification,
+                                            withCompletionHandler completionHandler:
+                                            @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner])
+    }
 }
