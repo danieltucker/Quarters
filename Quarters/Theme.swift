@@ -1,4 +1,6 @@
 import SwiftUI
+
+#if os(macOS)
 import AppKit
 
 extension NSColor {
@@ -24,6 +26,32 @@ extension Color {
         })
     }
 }
+#else
+import UIKit
+
+extension UIColor {
+    convenience init(hex: String) {
+        var s = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        if s.hasPrefix("#") { s.removeFirst() }
+        var v: UInt64 = 0
+        Scanner(string: s).scanHexInt64(&v)
+        self.init(
+            red: CGFloat((v >> 16) & 0xFF) / 255,
+            green: CGFloat((v >> 8) & 0xFF) / 255,
+            blue: CGFloat(v & 0xFF) / 255,
+            alpha: 1
+        )
+    }
+}
+
+extension Color {
+    init(light: String, dark: String) {
+        self.init(uiColor: UIColor { traits in
+            UIColor(hex: traits.userInterfaceStyle == .dark ? dark : light)
+        })
+    }
+}
+#endif
 
 // MARK: - Warm Mint color tokens (Direction 1)
 

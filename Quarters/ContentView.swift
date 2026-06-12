@@ -1,6 +1,8 @@
 import SwiftUI
 import SwiftData
+#if os(macOS)
 import AppKit
+#endif
 
 enum AppTab: String, CaseIterable {
     case focus   = "Focus"
@@ -30,18 +32,17 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // ── Titlebar (sits in the hidden-title-bar area) ─────────────
-            // TitlebarConfigurator gives the window an empty unified toolbar,
-            // which makes the title bar ~52pt tall with the traffic lights
-            // vertically centered in it. This strip matches that height so
-            // the coin chip centers on the same line.
+            // ── Header strip ─────────────────────────────────────────────
+            // macOS: sits in the hidden-title-bar area. TitlebarConfigurator
+            // gives the window an empty unified toolbar (~52pt tall, traffic
+            // lights centered); this strip matches that height. iOS: a plain
+            // padded header row under the status bar.
             HStack {
                 Spacer()
                 QCoinChip(balance: balance)
             }
             .padding(.trailing, 18)
-            .frame(height: 52)
-            .padding(.bottom, 2)
+            .modifier(HeaderStripStyle())
 
             // ── Tab switcher ─────────────────────────────────────────────
             tabBar
@@ -70,12 +71,9 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(Theme.bg)
-        .background { TitlebarConfigurator() }
+        .modifier(WindowChrome())
         .overlay { coinFlightLayer }
         .overlay { celebrationLayer }
-        // .hiddenTitleBar still reserves the title bar strip as safe area;
-        // extend into it so the header row sits beside the traffic lights.
-        .ignoresSafeArea(.container, edges: .top)
         .onAppear(perform: seedRewardsIfNeeded)
         .onReceive(NotificationCenter.default.publisher(for: .qCoinsCollected)) { note in
             guard let amount = note.userInfo?["amount"] as? Int else { return }
@@ -370,6 +368,40 @@ private struct TabSegment: View {
     }
 }
 
+// MARK: - Platform chrome
+
+// Header strip sizing: macOS matches the 52pt unified-toolbar title bar so
+// the chip centers on the traffic lights' line; iOS is a plain header row.
+private struct HeaderStripStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        #if os(macOS)
+        content
+            .frame(height: 52)
+            .padding(.bottom, 2)
+        #else
+        content
+            .padding(.top, 10)
+            .padding(.bottom, 6)
+        #endif
+    }
+}
+
+// macOS window dressing: transparent unified-toolbar title bar, and content
+// extended into the title bar strip (still reserved as safe area by
+// .hiddenTitleBar). iOS needs neither.
+private struct WindowChrome: ViewModifier {
+    func body(content: Content) -> some View {
+        #if os(macOS)
+        content
+            .background { TitlebarConfigurator() }
+            .ignoresSafeArea(.container, edges: .top)
+        #else
+        content
+        #endif
+    }
+}
+
+#if os(macOS)
 // MARK: - Titlebar configurator
 // An empty unified toolbar makes the title bar ~52pt tall, which vertically
 // centers the traffic lights with comfortable padding. viewDidMoveToWindow
@@ -395,4 +427,5 @@ private struct TitlebarConfigurator: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView { AccessorView() }
     func updateNSView(_ nsView: NSView, context: Context) {}
 }
+#endif
 

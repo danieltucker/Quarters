@@ -1,5 +1,25 @@
-import AppKit
 import UserNotifications
+import CoreText
+#if os(macOS)
+import AppKit
+#else
+import AudioToolbox
+#endif
+
+enum Fonts {
+    /// macOS loads bundled fonts via the ATSApplicationFontsPath Info.plist
+    /// key; iOS has no equivalent that works with a generated Info.plist,
+    /// so register the bundled .ttf files with CoreText at launch.
+    static func registerBundled() {
+        #if os(iOS)
+        let urls = (Bundle.main.urls(forResourcesWithExtension: "ttf", subdirectory: nil) ?? [])
+                 + (Bundle.main.urls(forResourcesWithExtension: "ttf", subdirectory: "fonts") ?? [])
+        for url in urls {
+            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+        }
+        #endif
+    }
+}
 
 extension Notification.Name {
     /// Posted by CheckoffView when coins are collected; ContentView listens
@@ -15,27 +35,36 @@ enum Sounds {
     static func tripleBeep() {
         for i in 0..<3 {
             DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.35) {
+                #if os(macOS)
                 if let s = NSSound(named: "Glass") {
                     s.play()
                 } else {
                     NSSound.beep()
                 }
+                #else
+                AudioServicesPlaySystemSound(1013)   // glass-like chime
+                #endif
             }
         }
     }
 
     private static var lastClink = Date.distantPast
 
-    /// Coin clink for flight arrivals. NSSound(named:) returns a shared
-    /// instance that won't restart while playing, so play a copy for
-    /// overlap. Throttled so big pours don't machine-gun the speaker.
+    /// Coin clink for flight arrivals. Throttled so big pours don't
+    /// machine-gun the speaker.
     static func clink() {
         let now = Date()
         guard now.timeIntervalSince(lastClink) > 0.06 else { return }
         lastClink = now
+        #if os(macOS)
+        // NSSound(named:) returns a shared instance that won't restart
+        // while playing, so play a copy for overlap.
         guard let s = NSSound(named: "Tink")?.copy() as? NSSound else { return }
         s.volume = Float.random(in: 0.35...0.6)
         s.play()
+        #else
+        AudioServicesPlaySystemSound(1057)   // Tink
+        #endif
     }
 }
 
