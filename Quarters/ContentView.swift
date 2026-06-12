@@ -22,15 +22,18 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             // ── Titlebar (sits in the hidden-title-bar area) ─────────────
+            // Fixed 36pt strip: contents center on the traffic lights'
+            // centerline (~18pt). Leading 76 leaves the same 18pt gap after
+            // the lights (which end ~x=58) as the trailing margin.
             HStack {
                 QWordmark(size: 17)
                 Spacer()
                 QCoinChip(balance: balance)
             }
-            .padding(.leading, 80)   // clear traffic lights (close/min/max end ~x=64)
+            .padding(.leading, 76)
             .padding(.trailing, 18)
-            .padding(.top, 7)        // vertically center wordmark on the traffic lights
-            .padding(.bottom, 10)
+            .frame(height: 36)
+            .padding(.bottom, 6)
 
             // ── Tab switcher ─────────────────────────────────────────────
             tabBar
