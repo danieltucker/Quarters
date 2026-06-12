@@ -97,6 +97,7 @@ struct SetupView: View {
                                 .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                                 .overlay(RoundedRectangle(cornerRadius: 11)
                                     .strokeBorder(Theme.line2, lineWidth: 1.5))
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
@@ -159,6 +160,7 @@ struct SetupView: View {
         let title = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else { return }
         context.insert(FocusTask(title: title))
+        try? context.save()
         draft = ""
     }
 

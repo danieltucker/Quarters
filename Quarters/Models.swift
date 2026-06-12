@@ -68,6 +68,7 @@ final class FocusTask {
         self.carriedOver = carriedOver
         self.isBig = false
         self.createdAt = .now
+        self.session = nil
     }
 }
 
