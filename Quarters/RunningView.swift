@@ -97,8 +97,8 @@ struct RunningView: View {
                     .textFieldStyle(.plain)
                     .font(.qText(13.5))
                     .foregroundStyle(Theme.ink)
-                    .padding(.vertical, 10)
                     .padding(.horizontal, 13)
+                    .frame(height: 40)
                     .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                     .overlay(RoundedRectangle(cornerRadius: 11)
                         .strokeBorder(Theme.line2, lineWidth: 1.5))
@@ -106,10 +106,11 @@ struct RunningView: View {
 
                 Button(action: addTask) {
                     QIcon(name: "plus", size: 16, color: Theme.ink2)
-                        .frame(width: 42, height: 42)
+                        .frame(width: 40, height: 40)
                         .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                         .overlay(RoundedRectangle(cornerRadius: 11)
                             .strokeBorder(Theme.line2, lineWidth: 1.5))
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }

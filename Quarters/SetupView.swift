@@ -84,8 +84,8 @@ struct SetupView: View {
                             .textFieldStyle(.plain)
                             .font(.qText(13.5))
                             .foregroundStyle(Theme.ink)
-                            .padding(.vertical, 10)
                             .padding(.horizontal, 13)
+                            .frame(height: 40)
                             .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                             .overlay(RoundedRectangle(cornerRadius: 11)
                                 .strokeBorder(Theme.line2, lineWidth: 1.5))
@@ -93,7 +93,7 @@ struct SetupView: View {
 
                         Button(action: addTask) {
                             QIcon(name: "plus", size: 16, color: Theme.ink2)
-                                .frame(width: 42, height: 42)
+                                .frame(width: 40, height: 40)
                                 .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                                 .overlay(RoundedRectangle(cornerRadius: 11)
                                     .strokeBorder(Theme.line2, lineWidth: 1.5))
@@ -104,12 +104,6 @@ struct SetupView: View {
                     .padding(.bottom, 10)
 
                     // Task rows
-                    #if DEBUG
-                    Text("debug · allTasks: \(allTasks.count)  backlog: \(backlog.count)")
-                        .font(.qMono(9))
-                        .foregroundStyle(Theme.ink3)
-                        .padding(.bottom, 4)
-                    #endif
                     if backlog.isEmpty {
                         Text("No goals yet — name one thing to get done.")
                             .font(.qText(13))
