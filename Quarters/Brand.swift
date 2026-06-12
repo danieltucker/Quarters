@@ -237,42 +237,39 @@ struct QuarterPicker: View {
     var size: CGFloat = 120
 
     var body: some View {
-        ZStack {
-            Canvas { context, canvasSize in
-                let s  = canvasSize.width
-                let c  = s / 2
-                let r  = s / 2 - 2          // slight inset so stroke isn't clipped
+        Canvas { context, canvasSize in
+            let c  = canvasSize.width / 2
+            let r  = c - 1.5   // inset so outer stroke isn't clipped
 
-                for i in 0..<4 {
-                    // Wedge i: covers degrees [i*90 – 90 + 3 … (i+1)*90 – 90 – 3]
-                    // offset so wedge 0 starts at 12 o'clock, with a 3° gap on each side
-                    let a0 = Double(i) * 90.0 - 90.0 + 3.0
-                    let a1 = Double(i) * 90.0 - 90.0 + 87.0
+            // 4 flush wedges; wedge 0 = top-right (12 → 3 o'clock)
+            for i in 0..<4 {
+                let a0 = Double(i) * 90.0 - 90.0
+                let a1 = a0 + 90.0
 
-                    var path = Path()
-                    path.move(to: CGPoint(x: c, y: c))
-                    path.addArc(center: CGPoint(x: c, y: c), radius: r,
-                                startAngle: .degrees(a0), endAngle: .degrees(a1), clockwise: false)
-                    path.closeSubpath()
+                var path = Path()
+                path.move(to: CGPoint(x: c, y: c))
+                path.addArc(center: CGPoint(x: c, y: c), radius: r,
+                            startAngle: .degrees(a0), endAngle: .degrees(a1), clockwise: false)
+                path.closeSubpath()
 
-                    let filled = i < quarters
-                    context.fill(path, with: .color(filled ? Theme.accent : Theme.card))
-                    context.stroke(path, with: .color(filled ? Theme.accentDeep : Theme.line2),
-                                   style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
-                }
-
-                // Center hub
-                let hubR: CGFloat = 13
-                let hub = Path(ellipseIn: CGRect(x: c - hubR, y: c - hubR,
-                                                 width: hubR * 2, height: hubR * 2))
-                context.fill(hub, with: .color(Theme.bg))
-                context.stroke(hub, with: .color(Theme.line2), lineWidth: 1.5)
+                context.fill(path, with: .color(i < quarters ? Theme.accent : Theme.card))
             }
 
-            // Quarter count in the hub
-            Text("\(quarters)")
-                .font(.qMono(13, weight: .bold))
-                .foregroundStyle(Theme.ink)
+            // Outer ring drawn over wedges so it reads as one unified face
+            let ring = Path(ellipseIn: CGRect(x: c - r, y: c - r, width: r * 2, height: r * 2))
+            context.stroke(ring, with: .color(Theme.ink),
+                           style: StrokeStyle(lineWidth: 2.0))
+
+            // Radial dividers at 12, 3, 6, 9 o'clock
+            for deg in [-90.0, 0.0, 90.0, 180.0] {
+                let rad = deg * Double.pi / 180.0
+                var line = Path()
+                line.move(to: CGPoint(x: c, y: c))
+                line.addLine(to: CGPoint(x: c + r * CGFloat(cos(rad)),
+                                         y: c + r * CGFloat(sin(rad))))
+                context.stroke(line, with: .color(Theme.ink),
+                               style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+            }
         }
         .frame(width: size, height: size)
         .contentShape(Circle())
