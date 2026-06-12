@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppKit
 
 enum AppTab: String, CaseIterable {
     case focus   = "Focus"
@@ -59,6 +60,7 @@ struct ContentView: View {
         }
         .padding(.top, 8)
         .background(Theme.bg)
+        .background { WindowConfigurator() }
         .navigationTitle("")
         .onAppear(perform: seedRewardsIfNeeded)
     }
@@ -94,4 +96,23 @@ struct ContentView: View {
         guard allRewards.isEmpty else { return }
         Reward.seedDefaults(into: context)
     }
+}
+
+// MARK: - Window configurator
+
+private struct WindowConfigurator: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            guard let w = view.window else { return }
+            w.titlebarAppearsTransparent = true
+            w.backgroundColor = NSColor(name: nil) { appearance in
+                appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                    ? NSColor(hex: "1F1912")
+                    : NSColor(hex: "F5EFE2")
+            }
+        }
+        return view
+    }
+    func updateNSView(_ nsView: NSView, context: Context) {}
 }
