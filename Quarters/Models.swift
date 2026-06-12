@@ -58,7 +58,10 @@ final class FocusTask {
     var title: String
     var isDone: Bool
     var carriedOver: Bool
-    var isBig: Bool
+    // Inline default is required: schema migration must backfill rows that
+    // predate this attribute, and a mandatory attribute with no default
+    // makes the whole container fail to open (error 134110).
+    var isBig: Bool = false
     var createdAt: Date
     var session: Session?
 
