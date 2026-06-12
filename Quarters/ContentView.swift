@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import AppKit
 
 enum AppTab: String, CaseIterable {
     case focus   = "Focus"
@@ -22,15 +21,15 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // ── Titlebar ────────────────────────────────────────────────
+            // ── Titlebar (sits in the hidden-title-bar area) ─────────────
             HStack {
                 QWordmark(size: 17)
                 Spacer()
                 QCoinChip(balance: balance)
             }
-            .padding(.horizontal, 18)
-            .padding(.top, 14)
-            .padding(.bottom, 10)
+            .padding(.leading, 80)   // clear traffic lights (close/min/max end ~x=64)
+            .padding(.trailing, 18)
+            .padding(.vertical, 9)
 
             // ── Tab switcher ─────────────────────────────────────────────
             tabBar
@@ -58,10 +57,7 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .padding(.top, 8)
         .background(Theme.bg)
-        .background { WindowConfigurator() }
-        .navigationTitle("")
         .onAppear(perform: seedRewardsIfNeeded)
     }
 
@@ -98,21 +94,3 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Window configurator
-
-private struct WindowConfigurator: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            guard let w = view.window else { return }
-            w.titlebarAppearsTransparent = true
-            w.backgroundColor = NSColor(name: nil) { appearance in
-                appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-                    ? NSColor(hex: "1F1912")
-                    : NSColor(hex: "F5EFE2")
-            }
-        }
-        return view
-    }
-    func updateNSView(_ nsView: NSView, context: Context) {}
-}

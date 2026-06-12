@@ -15,6 +15,7 @@ struct FocusForgeApp: App {
                 .frame(width: 500, height: 660)
         }
         .windowResizability(.contentSize)
+        .windowStyle(.hiddenTitleBar)
         .modelContainer(for: [Session.self, FocusTask.self, LedgerEntry.self, Reward.self, DailyLog.self])
     }
 }
