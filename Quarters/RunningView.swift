@@ -80,45 +80,46 @@ struct RunningView: View {
             .padding(.top, 12)
             .padding(.bottom, 18)
 
-            // ── Session goals ─────────────────────────────────────────
+            // ── Session goals (scrolls; ring and footer stay fixed) ───
             SectionLabel("Session goals",
                          right: "\(doneCount) of \(sortedTasks.count) done")
                 .padding(.bottom, 10)
 
-            VStack(spacing: 7) {
-                ForEach(sortedTasks) { task in
-                    TaskRow(task: task, showBigToggle: true)
+            ScrollView {
+                VStack(spacing: 7) {
+                    ForEach(sortedTasks) { task in
+                        TaskRow(task: task, showBigToggle: true)
+                    }
+
+                    // ── Add task inline ───────────────────────────────
+                    HStack(spacing: 8) {
+                        TextField("Add a task…", text: $draft)
+                            .textFieldStyle(.plain)
+                            .font(.qText(13.5))
+                            .foregroundStyle(Theme.ink)
+                            .padding(.horizontal, 13)
+                            .frame(height: 40)
+                            .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
+                            .overlay(RoundedRectangle(cornerRadius: 11)
+                                .strokeBorder(Theme.line2, lineWidth: 1.5))
+                            .onSubmit(addTask)
+
+                        Button(action: addTask) {
+                            QIcon(name: "plus", size: 16, color: Theme.ink2)
+                                .frame(width: 40, height: 40)
+                                .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
+                                .overlay(RoundedRectangle(cornerRadius: 11)
+                                    .strokeBorder(Theme.line2, lineWidth: 1.5))
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.top, 3)
                 }
+                .padding(.bottom, 4)
             }
 
-            // ── Add task inline ───────────────────────────────────────
-            HStack(spacing: 8) {
-                TextField("Add a task…", text: $draft)
-                    .textFieldStyle(.plain)
-                    .font(.qText(13.5))
-                    .foregroundStyle(Theme.ink)
-                    .padding(.horizontal, 13)
-                    .frame(height: 40)
-                    .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
-                    .overlay(RoundedRectangle(cornerRadius: 11)
-                        .strokeBorder(Theme.line2, lineWidth: 1.5))
-                    .onSubmit(addTask)
-
-                Button(action: addTask) {
-                    QIcon(name: "plus", size: 16, color: Theme.ink2)
-                        .frame(width: 40, height: 40)
-                        .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
-                        .overlay(RoundedRectangle(cornerRadius: 11)
-                            .strokeBorder(Theme.line2, lineWidth: 1.5))
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.top, 10)
-
-            Spacer(minLength: 16)
-
-            // ── Footer ────────────────────────────────────────────────
+            // ── Footer (always visible) ───────────────────────────────
             HStack {
                 Button(action: pause) {
                     HStack(spacing: 8) {
@@ -139,6 +140,7 @@ struct RunningView: View {
                 }
                 .buttonStyle(.plain)
             }
+            .padding(.top, 12)
         }
         .padding(.horizontal, 22)
         .padding(.bottom, 22)
