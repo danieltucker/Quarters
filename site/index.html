@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Quarters — every quarter-hour mints a quarter</title>
-<meta name="description" content="Quarters turns focus into currency. Sit down for 15 minutes, earn a coin. Spend coins on rewards you choose. Focus app for macOS — iOS and web coming." />
+<meta name="description" content="Quarters turns focus into currency. Sit down for 15 minutes, earn coins. Spend them on rewards you give yourself. Focus app for Mac — iPhone coming soon." />
 <meta property="og:title" content="Quarters — every quarter-hour mints a quarter" />
-<meta property="og:description" content="Quarters turns focus into currency. Sit down for 15 minutes, earn a coin. Spend coins on rewards you choose." />
+<meta property="og:description" content="Quarters turns focus into currency. Sit down for 15 minutes, earn coins. Spend them on rewards you give yourself." />
 <meta property="og:type" content="website" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%23F5EFE2' stroke='%2333291C' stroke-width='2'/%3E%3Cpath d='M12 12 L12 2 A10 10 0 0 1 22 12 Z' fill='%23C05B2B'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="styles.css" />
@@ -22,12 +22,19 @@
       <line x1="12" y1="12" x2="12" y2="2" stroke="var(--q-ink)" stroke-width="1.5"></line>
       <line x1="12" y1="12" x2="22" y2="12" stroke="var(--q-ink)" stroke-width="1.5"></line>
     </symbol>
+    <linearGradient id="coin-grad" x1="0.15" y1="0.1" x2="0.85" y2="0.95">
+      <stop offset="0" stop-color="#EFD27A"></stop>
+      <stop offset="0.55" stop-color="#C99B45"></stop>
+      <stop offset="1" stop-color="#A37B2F"></stop>
+    </linearGradient>
     <symbol id="i-coin" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="11" fill="var(--q-coin)"></circle>
+      <circle cx="12" cy="12" r="11" fill="url(#coin-grad)"></circle>
       <circle cx="12" cy="12" r="11" fill="none" stroke="var(--q-coin-deep)" stroke-width="1.6"></circle>
       <circle cx="12" cy="12" r="7.5" fill="none" stroke="var(--q-coin-deep)" stroke-width="1" opacity="0.55"></circle>
       <path d="M12 12 L12 1.6 A10.4 10.4 0 0 1 22.4 12 Z" fill="var(--q-coin-deep)" opacity="0.4"></path>
+      <path d="M3.69 9.77 A8.6 8.6 0 0 1 9.77 3.69" fill="none" stroke="#FFFFFF" stroke-opacity="0.65" stroke-width="1.5" stroke-linecap="round"></path>
     </symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"></rect><path d="M10.5 18.5h3"></path></symbol>
     <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5-10-6.5Z"></path></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8.5 5.5v13M15.5 5.5v13"></path></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"></path></symbol>
@@ -52,7 +59,7 @@
   <nav class="nav-links">
     <a href="#how">How it works</a>
     <a href="#features">Rewards</a>
-    <a class="btn" href="#download">Download for Mac</a>
+    <a class="btn" href="https://github.com/danieltucker/Quarters/releases/latest">Download for Mac</a>
   </nav>
 </header>
 
@@ -60,18 +67,18 @@
 <section class="wrap hero">
   <div class="eyebrow">
     <svg class="icon" width="15" height="15"><use href="#i-coin"></use></svg>
-    Focus app for macOS — iOS &amp; web coming
+    Focus app for Mac — iPhone coming soon
   </div>
   <h1>Every quarter-hour<br /><span class="accent">mints a quarter.</span></h1>
-  <p>Quarters turns focus into currency. Sit down for 15 minutes, earn a coin. Spend coins on rewards you choose — coffee, a walk, guilt-free gaming.</p>
+  <p>Quarters turns focus into currency. Sit down for 15 minutes, earn coins. Spend them on rewards you give yourself — coffee, a walk, guilt-free gaming.</p>
   <div class="hero-ctas">
-    <a class="btn lg" href="#download">
+    <a class="btn lg" href="https://github.com/danieltucker/Quarters/releases/latest">
       <svg class="icon" width="16" height="16" fill="currentColor" stroke="none"><use href="#i-play"></use></svg>
       Download for Mac
     </a>
     <a class="btn lg ghost" href="#how">See how it works</a>
   </div>
-  <div class="hero-note">Free while in beta · No account required</div>
+  <div class="hero-note">Free while in beta · No account required · iPhone &amp; iPad version coming soon</div>
 </section>
 
 <!-- ===== hero app shots ===== -->
@@ -81,17 +88,14 @@
   <div class="shot side l"><div class="win">
     <div class="titlebar">
       <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-      <div class="brand"><svg class="icon" width="20" height="20"><use href="#i-mark"></use></svg><b>Quarters</b></div>
       <div class="coin-chip"><svg class="icon" width="17" height="17"><use href="#i-coin"></use></svg>50</div>
     </div>
     <div class="tabs"><span class="on">Focus</span><span>Rewards</span><span>Ledger</span></div>
     <div class="win-body">
       <div class="ring-wrap">
         <svg width="216" height="216" viewBox="0 0 216 216" fill="none" stroke-linecap="round" stroke-width="11">
-          <path d="M112.47 5.6 A102.5 102.5 0 0 1 112.47 210.4" stroke="var(--q-line2)"></path>
-          <path d="M103.53 210.4 A102.5 102.5 0 0 1 103.53 5.6" stroke="var(--q-line2)"></path>
-          <path d="M112.47 5.6 A102.5 102.5 0 0 1 112.47 210.4" stroke="var(--q-accent)"></path>
-          <path d="M103.53 210.4 A102.5 102.5 0 0 1 6.27 120.5" stroke="var(--q-accent)"></path>
+          <circle cx="108" cy="108" r="102.5" stroke="var(--q-line2)"></circle>
+          <path d="M108 5.5 A102.5 102.5 0 1 1 6.5 122.3" stroke="var(--q-accent)"></path>
         </svg>
         <div class="ring-center"><div class="time">08:08</div><div class="q">Quarter 2 of 2</div></div>
       </div>
@@ -106,7 +110,6 @@
         </div>
       </div>
       <div class="session-foot">
-        <div class="pause"><svg class="icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><use href="#i-pause"></use></svg> Pause</div>
         <div class="end">End early — keep 1 coin</div>
       </div>
     </div>
@@ -116,24 +119,20 @@
   <div class="shot main"><div class="win">
     <div class="titlebar">
       <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-      <div class="brand"><svg class="icon" width="20" height="20"><use href="#i-mark"></use></svg><b>Quarters</b></div>
       <div class="coin-chip"><svg class="icon" width="17" height="17"><use href="#i-coin"></use></svg>50</div>
     </div>
     <div class="tabs"><span class="on">Focus</span><span>Rewards</span><span>Ledger</span></div>
     <div class="win-body">
-      <div class="sec-label"><b>How long can you give?</b><i>2 coins + streak bonus</i></div>
+      <div class="sec-label"><b>How long can you give?</b><i>25 coins + streak bonus</i></div>
       <div class="picker-card">
         <svg width="120" height="120" viewBox="0 0 120 120">
-          <path d="M60 60 L62.72 8.07 A52 52 0 0 1 111.93 57.28 Z" fill="var(--q-accent)" stroke="var(--q-accent-deep)" stroke-width="1.5" stroke-linejoin="round"></path>
-          <path d="M60 60 L111.93 62.72 A52 52 0 0 1 62.72 111.93 Z" fill="var(--q-accent)" stroke="var(--q-accent-deep)" stroke-width="1.5" stroke-linejoin="round"></path>
-          <path d="M60 60 L57.28 111.93 A52 52 0 0 1 8.07 62.72 Z" fill="var(--q-card)" stroke="var(--q-line2)" stroke-width="1.5" stroke-linejoin="round"></path>
-          <path d="M60 60 L8.07 57.28 A52 52 0 0 1 57.28 8.07 Z" fill="var(--q-card)" stroke="var(--q-line2)" stroke-width="1.5" stroke-linejoin="round"></path>
-          <circle cx="60" cy="60" r="13" fill="var(--q-bg)" stroke="var(--q-line2)" stroke-width="1.5"></circle>
-          <text x="60" y="64.5" text-anchor="middle" font-size="13" font-weight="700" fill="var(--q-ink)" font-family="Spline Sans Mono, monospace">2</text>
+          <circle cx="60" cy="60" r="58.5" fill="var(--q-card)"></circle>
+          <path d="M60 60 L60 1.5 A58.5 58.5 0 0 1 60 118.5 Z" fill="var(--q-accent)"></path>
+          <circle cx="60" cy="60" r="58.5" fill="none" stroke="var(--q-ink)" stroke-width="2"></circle>
         </svg>
         <div>
           <h3>2 quarters</h3>
-          <p>30 minutes · mints <b>2 coins</b></p>
+          <p>30 minutes · mints <b>25 coins</b></p>
           <div class="dur-chips"><span>15m</span><span class="on">30m</span><span>45m</span><span>60m</span></div>
         </div>
       </div>
@@ -153,7 +152,7 @@
         <svg class="icon" width="15" height="15" fill="currentColor" stroke="none"><use href="#i-play"></use></svg>
         Start 30-minute session
       </div>
-      <div class="streak-note">3-day streak · finish today to keep it <svg class="icon" width="13" height="13" fill="none" stroke="var(--q-accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-flame"></use></svg></div>
+      <div class="streak-note">3-day streak · +1.5% coins · finish today to keep it <svg class="icon" width="13" height="13" fill="none" stroke="var(--q-accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-flame"></use></svg></div>
     </div>
   </div></div>
 
@@ -161,7 +160,6 @@
   <div class="shot side r"><div class="win">
     <div class="titlebar">
       <div class="lights"><span class="r"></span><span class="y"></span><span class="g"></span></div>
-      <div class="brand"><svg class="icon" width="20" height="20"><use href="#i-mark"></use></svg><b>Quarters</b></div>
       <div class="coin-chip"><svg class="icon" width="17" height="17"><use href="#i-coin"></use></svg>50</div>
     </div>
     <div class="tabs"><span>Focus</span><span class="on">Rewards</span><span>Ledger</span></div>
@@ -214,7 +212,7 @@
     <div class="steps">
       <div class="step"><div class="n">1</div><div><h3>Commit your quarters</h3><p>Pick one to four quarter-hours and name what you'll get done. Longer commitments earn a bonus over chained short ones.</p></div></div>
       <div class="step"><div class="n">2</div><div><h3>Focus, mint coins</h3><p>A quiet timer counts each quarter. Finish a quarter, mint a coin. Check off a task, earn one more.</p></div></div>
-      <div class="step"><div class="n">3</div><div><h3>Spend deliberately</h3><p>You set the rewards and the prices. The vice you'd reach for anyway becomes something you've earned.</p></div></div>
+      <div class="step"><div class="n">3</div><div><h3>Spend deliberately</h3><p>The rewards are ones you give yourself — and you set the prices. The vice you'd reach for anyway becomes something you've earned.</p></div></div>
     </div>
   </div>
 </section>
@@ -224,18 +222,18 @@
   <div class="feat-grid">
     <div class="feat">
       <div class="tile"><svg class="icon" width="23" height="23" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-flame"></use></svg></div>
-      <h3>Streaks that forgive</h3>
-      <p>A daily streak rewards showing up — and one missed day bends it, never breaks it. The coach is warm, not cruel.</p>
+      <h3>Streaks that pay</h3>
+      <p>Show up daily and every coin you mint earns a growing bonus — half a percent per day, up to 5%. The longer you keep it alive, the richer each quarter gets.</p>
     </div>
     <div class="feat">
       <div class="tile"><svg class="icon" width="23" height="23" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-gift"></use></svg></div>
-      <h3>Your rewards, your prices</h3>
-      <p>Coffee at 20, gaming at 40, that handheld emulator at 950. Save up for the big stuff like you mean it.</p>
+      <h3>Rewards you give yourself</h3>
+      <p>Coffee at 20, gaming at 40, that handheld emulator at 950. You set the menu and the prices — then save up for the big stuff like you mean it.</p>
     </div>
     <div class="feat">
-      <div class="tile"><svg class="icon" width="23" height="23" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-menu"></use></svg></div>
-      <h3>Lives in your menu bar</h3>
-      <p>A compact companion window and a menu-bar timer. Your quarters follow you to iOS and the web next.</p>
+      <div class="tile"><svg class="icon" width="23" height="23" fill="none" stroke="var(--q-accent-deep)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#i-phone"></use></svg></div>
+      <h3>Mac today, iPhone soon</h3>
+      <p>A native Mac app with coins that fly, clink, and count. The same warm design is coming to iPhone and iPad — your data stays on your device.</p>
     </div>
   </div>
 </section>
@@ -245,11 +243,12 @@
   <div class="wrap">
     <div class="mark"><svg class="icon" width="64" height="64"><use href="#i-mark"></use></svg></div>
     <h2>Your next quarter starts now.</h2>
-    <p>Fifteen minutes. One coin. Worth it.</p>
-    <a class="btn lg" href="#">
+    <p>Fifteen minutes. Ten coins. Worth it.</p>
+    <a class="btn lg" href="https://github.com/danieltucker/Quarters/releases/latest">
       <svg class="icon" width="16" height="16" fill="currentColor" stroke="none"><use href="#i-play"></use></svg>
       Download for Mac
     </a>
+    <div class="hero-note" style="margin-top: 14px;">Free · iPhone &amp; iPad version coming soon</div>
     <div class="footer">
       <span class="brand"><svg class="icon" width="16" height="16"><use href="#i-mark"></use></svg><b style="font-size: 13px; font-family: var(--font-display);">Quarters</b></span>
       <span>© 2026 Quarters · Privacy · Contact</span>

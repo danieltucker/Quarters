@@ -135,8 +135,7 @@ a { color: inherit; text-decoration: none; }
 .ring-center .time { font-family: var(--font-mono); font-size: 44px; font-weight: 600; letter-spacing: -0.02em; }
 .ring-center .q { font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--q-accent); }
 .ring-cap { text-align: center; font-size: 12.5px; color: var(--q-ink2); margin-top: 12px; }
-.session-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
-.session-foot .pause { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--q-ink2); }
+.session-foot { margin-top: auto; display: flex; align-items: center; justify-content: center; }
 .session-foot .end { font-size: 12.5px; font-weight: 600; color: var(--q-ink3); }
 
 .rw-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
@@ -145,7 +144,7 @@ a { color: inherit; text-decoration: none; }
 .rw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start; }
 .rw-card { background: var(--q-card); border: 1px solid var(--q-line); border-radius: 14px; padding: 15px 15px 13px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--q-shadow); }
 .rw-card .tile { width: 36px; height: 36px; border-radius: 10px; background: var(--q-accent-soft); display: grid; place-items: center; }
-.rw-card h4 { font-size: 14px; font-weight: 700; margin: 0; }
+.rw-card h4 { font-family: var(--font-display); font-size: 15px; font-weight: 700; margin: 0; }
 .rw-card p { font-size: 12px; color: var(--q-ink2); margin: 1px 0 0; line-height: 1.4; }
 .rw-card .buy { margin-top: 2px; display: flex; align-items: center; justify-content: center; gap: 7px; background: var(--q-accent); color: var(--q-on-accent); border-radius: 9px; padding: 8px 0; font-size: 13px; font-weight: 700; }
 .rw-card .bar { height: 7px; border-radius: 4px; background: var(--q-bg2); overflow: hidden; margin-top: 2px; }
