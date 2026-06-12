@@ -6,8 +6,8 @@ struct SetupView: View {
     @State private var quarters = 2   // 1–4
     @State private var draft = ""
 
-    @Query(filter: #Predicate<FocusTask> { $0.session == nil },
-           sort: \FocusTask.createdAt) private var backlog: [FocusTask]
+    @Query(sort: \FocusTask.createdAt) private var allTasks: [FocusTask]
+    private var backlog: [FocusTask] { allTasks.filter { $0.session == nil } }
 
     private var minutes: Int { quarters * 15 }
     private var coinCount: Int { AppConfig.points(forBlocks: quarters) }
