@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Shell / dotfiles that don't belong in the repo
+.zshrc
+
+# Xcode build output
+build/
+DerivedData/
+*.xcarchive
+
+# Distribution artifacts
+dist/
+
+# Per-user Xcode state (keep shared schemes + project.pbxproj)
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# CocoaPods / Carthage (if ever added)
+Pods/
+Carthage/Build/
