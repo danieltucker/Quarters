@@ -5,6 +5,7 @@ struct SetupView: View {
     @Environment(\.modelContext) private var context
     @State private var quarters = 2   // 1–4
     @State private var draft = ""
+    @FocusState private var goalFocused: Bool
 
     @Query(sort: \FocusTask.createdAt) private var allTasks: [FocusTask]
     private var backlog: [FocusTask] { allTasks.filter { $0.session == nil } }
@@ -17,6 +18,7 @@ struct SetupView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     // ── Header ────────────────────────────────────────────
@@ -96,6 +98,7 @@ struct SetupView: View {
                             .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                             .overlay(RoundedRectangle(cornerRadius: 11)
                                 .strokeBorder(Theme.line2, lineWidth: 1.5))
+                            .focused($goalFocused)
                             .onSubmit(addTask)
 
                         Button(action: addTask) {
@@ -109,6 +112,7 @@ struct SetupView: View {
                         .buttonStyle(.plain)
                     }
                     .padding(.bottom, 10)
+                    .id("addGoal")
 
                     // Task rows
                     if backlog.isEmpty {
@@ -129,6 +133,14 @@ struct SetupView: View {
                 .padding(.horizontal, 22)
                 .padding(.top, 8)
                 .padding(.bottom, 14)
+            }
+            // Keep the goal field above the keyboard when it appears.
+            .onChange(of: goalFocused) { _, focused in
+                guard focused else { return }
+                withAnimation(.easeOut(duration: 0.3)) {
+                    proxy.scrollTo("addGoal", anchor: .center)
+                }
+            }
             }
 
             // ── Start button (always pinned to bottom) ────────────────

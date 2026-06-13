@@ -7,6 +7,7 @@ struct RunningView: View {
     @Bindable var session: Session
     @State private var now = Date.now
     @State private var draft = ""
+    @FocusState private var inputFocused: Bool
 
     private let tick = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
@@ -85,49 +86,56 @@ struct RunningView: View {
                          right: "\(doneCount) of \(sortedTasks.count) done")
                 .padding(.bottom, 10)
 
-            ScrollView {
-                VStack(spacing: 7) {
-                    ForEach(sortedTasks) { task in
-                        TaskRow(task: task, showBigToggle: true)
-                    }
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 7) {
+                        ForEach(sortedTasks) { task in
+                            TaskRow(task: task, showBigToggle: true)
+                        }
 
-                    // ── Add task inline ───────────────────────────────
-                    HStack(spacing: 8) {
-                        TextField("Add a task…", text: $draft)
-                            .textFieldStyle(.plain)
-                            .font(.qText(13.5))
-                            .foregroundStyle(Theme.ink)
-                            .padding(.horizontal, 13)
-                            .frame(height: 40)
-                            .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
-                            .overlay(RoundedRectangle(cornerRadius: 11)
-                                .strokeBorder(Theme.line2, lineWidth: 1.5))
-                            .onSubmit(addTask)
-
-                        Button(action: addTask) {
-                            QIcon(name: "plus", size: 16, color: Theme.ink2)
-                                .frame(width: 40, height: 40)
+                        // ── Add task inline ───────────────────────────
+                        HStack(spacing: 8) {
+                            TextField("Add a task…", text: $draft)
+                                .textFieldStyle(.plain)
+                                .font(.qText(13.5))
+                                .foregroundStyle(Theme.ink)
+                                .padding(.horizontal, 13)
+                                .frame(height: 40)
                                 .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                                 .overlay(RoundedRectangle(cornerRadius: 11)
                                     .strokeBorder(Theme.line2, lineWidth: 1.5))
-                                .contentShape(Rectangle())
+                                .focused($inputFocused)
+                                .onSubmit(addTask)
+
+                            Button(action: addTask) {
+                                QIcon(name: "plus", size: 16, color: Theme.ink2)
+                                    .frame(width: 40, height: 40)
+                                    .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
+                                    .overlay(RoundedRectangle(cornerRadius: 11)
+                                        .strokeBorder(Theme.line2, lineWidth: 1.5))
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
+                        .padding(.top, 3)
+                        .id("addRow")
                     }
-                    .padding(.top, 3)
+                    .padding(.bottom, 4)
                 }
-                .padding(.bottom, 4)
+                // Keep the add row above the keyboard when it appears.
+                .onChange(of: inputFocused) { _, focused in
+                    guard focused else { return }
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        proxy.scrollTo("addRow", anchor: .bottom)
+                    }
+                }
             }
 
             // ── Footer (always visible) ───────────────────────────────
-            Button(action: endEarly) {
-                Text("End early — keep \(completedQuarters) coin\(completedQuarters == 1 ? "" : "s")")
-                    .font(.qText(12.5, weight: .semibold))
-                    .foregroundStyle(Theme.ink3)
-            }
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity)
-            .padding(.top, 12)
+            Button("End early", action: endEarly)
+                .buttonStyle(OutlineButtonStyle(tint: Theme.ink2))
+                .frame(maxWidth: .infinity)
+                .padding(.top, 12)
         }
         .padding(.horizontal, 22)
         .padding(.bottom, 22)
