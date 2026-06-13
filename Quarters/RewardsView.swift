@@ -305,7 +305,7 @@ struct RewardForm: View {
                     formField("Reward name", text: $name)
 
                     HStack(spacing: 8) {
-                        formField("Cost", text: $costText)
+                        formField("Cost", text: $costText, numeric: true)
                             .frame(width: 90)
                         QCoin(size: 15)
                         Text("coins")
@@ -318,7 +318,11 @@ struct RewardForm: View {
 
             formField("Short description (optional)", text: $detail)
 
-            HStack {
+            #if os(iOS)
+            Spacer(minLength: 0)   // push the actions to the bottom of the sheet
+            #endif
+
+            HStack(spacing: 10) {
                 Spacer()
                 Button("Cancel") { dismiss() }
                     .buttonStyle(OutlineButtonStyle())
@@ -329,14 +333,30 @@ struct RewardForm: View {
             }
             .padding(.top, 2)
         }
-        .padding(22)
-        .frame(width: 380)
+        .padding(formPadding)
         .background(Theme.bg)
+        #if os(macOS)
+        .frame(width: 380)
+        #else
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        #endif
         .onAppear {
             guard let r = reward else { return }
             icon = r.icon; name = r.name; detail = r.detail; costText = String(r.cost)
         }
     }
+
+    #if os(iOS)
+    private let formPadding: CGFloat = 24
+    private let fieldHeight: CGFloat = 50
+    private let fieldFont: CGFloat = 16
+    #else
+    private let formPadding: CGFloat = 22
+    private let fieldHeight: CGFloat = 36
+    private let fieldFont: CGFloat = 13
+    #endif
 
     private var emojiGrid: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.fixed(34), spacing: 4), count: 8),
@@ -361,16 +381,20 @@ struct RewardForm: View {
         .padding(10)
     }
 
-    private func formField(_ placeholder: String, text: Binding<String>) -> some View {
+    private func formField(_ placeholder: String, text: Binding<String>,
+                           numeric: Bool = false) -> some View {
         TextField(placeholder, text: text)
             .textFieldStyle(.plain)
-            .font(.qText(13))
+            .font(.qText(fieldFont))
             .foregroundStyle(Theme.ink)
-            .padding(.horizontal, 11)
-            .frame(height: 36)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: 10))
-            .overlay(RoundedRectangle(cornerRadius: 10)
+            .padding(.horizontal, 13)
+            .frame(height: fieldHeight)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12)
                 .strokeBorder(Theme.line2, lineWidth: 1))
+            #if os(iOS)
+            .keyboardType(numeric ? .numberPad : .default)
+            #endif
     }
 
     private var valid: Bool {
