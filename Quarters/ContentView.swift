@@ -14,6 +14,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var context
     @State private var tab: AppTab = .focus
     @Namespace private var tabNS
+    @State private var tabBarWidth: CGFloat = 0
 
     @Query private var ledger: [LedgerEntry]
     @Query(filter: #Predicate<Session> {
@@ -105,16 +106,41 @@ struct ContentView: View {
     private var tabBar: some View {
         HStack(spacing: 4) {
             ForEach(AppTab.allCases, id: \.self) { t in
-                TabSegment(tab: t, isActive: tab == t, ns: tabNS) {
-                    // Underdamped spring → the pill slides and wiggles as it stops.
-                    withAnimation(.spring(response: 0.38, dampingFraction: 0.6)) {
-                        tab = t
-                    }
-                }
+                TabSegment(tab: t, isActive: tab == t, ns: tabNS)
             }
         }
         .padding(4)
         .background(Theme.bg2, in: RoundedRectangle(cornerRadius: 11))
+        .background(
+            GeometryReader { g in
+                Color.clear
+                    .onAppear { tabBarWidth = g.size.width }
+                    .onChange(of: g.size.width) { _, w in tabBarWidth = w }
+            }
+        )
+        .contentShape(Rectangle())
+        // One gesture serves both tap and slide: a still touch selects on
+        // release; a moving touch sweeps the selection as the finger crosses
+        // segments. Light grain while sliding, a solid thunk on each new tab.
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    Haptics.slide()
+                    selectTab(atX: value.location.x)
+                }
+                .onEnded { value in selectTab(atX: value.location.x) }
+        )
+    }
+
+    private func selectTab(atX x: CGFloat) {
+        guard tabBarWidth > 0 else { return }
+        let tabs = AppTab.allCases
+        let idx = min(tabs.count - 1, max(0, Int(x / (tabBarWidth / CGFloat(tabs.count)))))
+        let target = tabs[idx]
+        guard target != tab else { return }
+        // Underdamped spring → the pill slides and wiggles as it stops.
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.6)) { tab = target }
+        Haptics.land()
     }
 
     private func seedRewardsIfNeeded() {
@@ -379,34 +405,32 @@ private struct TabSegment: View {
     let tab: AppTab
     let isActive: Bool
     var ns: Namespace.ID
-    let action: () -> Void
     @State private var hovering = false
 
     var body: some View {
-        Button(action: action) {
-            Text(tab.rawValue)
-                .font(.qText(13, weight: .semibold))
-                .foregroundStyle(isActive || hovering ? Theme.ink : Theme.ink2)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 7)
-                .background {
-                    if isActive {
-                        // One shared pill slides between segments via the
-                        // matched geometry; the spring on `tab` does the motion.
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Theme.card)
-                            .qShadow()
-                            .matchedGeometryEffect(id: "activeTab", in: ns)
-                    } else if hovering {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Theme.card.opacity(0.45))
-                    }
+        // Pure visual — selection is handled by the tab bar's shared gesture
+        // so a single drag can sweep across all segments.
+        Text(tab.rawValue)
+            .font(.qText(13, weight: .semibold))
+            .foregroundStyle(isActive || hovering ? Theme.ink : Theme.ink2)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 7)
+            .background {
+                if isActive {
+                    // One shared pill slides between segments via the
+                    // matched geometry; the spring on `tab` does the motion.
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Theme.card)
+                        .qShadow()
+                        .matchedGeometryEffect(id: "activeTab", in: ns)
+                } else if hovering {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Theme.card.opacity(0.45))
                 }
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .onHover { hovering = $0 }
-        .animation(.easeOut(duration: 0.12), value: hovering)
+            }
+            .contentShape(Rectangle())
+            .onHover { hovering = $0 }
+            .animation(.easeOut(duration: 0.12), value: hovering)
     }
 }
 

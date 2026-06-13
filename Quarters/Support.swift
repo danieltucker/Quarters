@@ -32,6 +32,28 @@ enum Haptics {
         NSHapticFeedbackManager.defaultPerformer.perform(.generic, performanceTime: .now)
         #endif
     }
+
+    private static var lastSlide = Date.distantPast
+
+    /// Faint texture while a finger slides across the tab bar (0.1 intensity).
+    /// Throttled tight so it reads as continuous grain, not discrete taps.
+    static func slide() {
+        let now = Date()
+        guard now.timeIntervalSince(lastSlide) > 0.035 else { return }
+        lastSlide = now
+        #if os(iOS)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred(intensity: 0.1)
+        #endif
+    }
+
+    /// Full-power thunk when the selection lands on a new tab.
+    static func land() {
+        #if os(iOS)
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred(intensity: 1.0)
+        #elseif os(macOS)
+        NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now)
+        #endif
+    }
 }
 
 enum Fonts {
