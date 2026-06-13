@@ -54,6 +54,24 @@ enum Haptics {
         NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now)
         #endif
     }
+
+    /// Heavy pop for long-press edit trigger or swipe-to-delete confirmation.
+    static func pop() {
+        #if os(iOS)
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred(intensity: 1.0)
+        #elseif os(macOS)
+        NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .now)
+        #endif
+    }
+
+    /// Medium pop for swipe-to-complete confirmation.
+    static func softPop() {
+        #if os(iOS)
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred(intensity: 0.8)
+        #elseif os(macOS)
+        NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now)
+        #endif
+    }
 }
 
 enum Fonts {

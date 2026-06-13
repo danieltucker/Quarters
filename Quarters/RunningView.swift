@@ -91,46 +91,48 @@ struct RunningView: View {
                                      right: "\(doneCount) of \(sortedTasks.count) done")
                             .padding(.bottom, 10)
 
-                        VStack(spacing: 7) {
-                            ForEach(sortedTasks) { task in
-                                TaskRow(task: task, showBigToggle: true)
-                            }
+                        // ── Add task inline (at top, matching SetupView) ──
+                        HStack(spacing: 8) {
+                            TextField("Add a task…", text: $draft)
+                                .textFieldStyle(.plain)
+                                .font(.qText(13.5))
+                                .foregroundStyle(Theme.ink)
+                                .padding(.horizontal, 13)
+                                .frame(height: 40)
+                                .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
+                                .overlay(RoundedRectangle(cornerRadius: 11)
+                                    .strokeBorder(Theme.line2, lineWidth: 1.5))
+                                .focused($inputFocused)
+                                .onSubmit(addTask)
 
-                            // ── Add task inline ───────────────────────
-                            HStack(spacing: 8) {
-                                TextField("Add a task…", text: $draft)
-                                    .textFieldStyle(.plain)
-                                    .font(.qText(13.5))
-                                    .foregroundStyle(Theme.ink)
-                                    .padding(.horizontal, 13)
-                                    .frame(height: 40)
+                            Button(action: addTask) {
+                                QIcon(name: "plus", size: 16, color: Theme.ink2)
+                                    .frame(width: 40, height: 40)
                                     .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                                     .overlay(RoundedRectangle(cornerRadius: 11)
                                         .strokeBorder(Theme.line2, lineWidth: 1.5))
-                                    .focused($inputFocused)
-                                    .onSubmit(addTask)
-
-                                Button(action: addTask) {
-                                    QIcon(name: "plus", size: 16, color: Theme.ink2)
-                                        .frame(width: 40, height: 40)
-                                        .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
-                                        .overlay(RoundedRectangle(cornerRadius: 11)
-                                            .strokeBorder(Theme.line2, lineWidth: 1.5))
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
+                                    .contentShape(Rectangle())
                             }
-                            .padding(.top, 3)
-                            .id("addRow")
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.bottom, 10)
+                        .id("addRow")
+
+                        VStack(spacing: 7) {
+                            ForEach(sortedTasks) { task in
+                                TaskRow(task: task, showBigToggle: true, onDelete: {
+                                    context.delete(task)
+                                })
+                            }
                         }
                         .padding(.bottom, 4)
                     }
                 }
-                // Keep the add row above the keyboard when it appears.
+                // Scroll input into view when keyboard appears.
                 .onChange(of: inputFocused) { _, focused in
                     guard focused else { return }
                     withAnimation(.easeOut(duration: 0.3)) {
-                        proxy.scrollTo("addRow", anchor: .bottom)
+                        proxy.scrollTo("addRow", anchor: .top)
                     }
                 }
             }

@@ -198,7 +198,99 @@ struct TaskRow: View {
     var showBigToggle: Bool = true
     var onDelete: (() -> Void)? = nil
 
+    // Swipe gesture state
+    @State private var dragX: CGFloat = 0
+
+    // Long-press / edit state
+    @State private var showEditModal = false
+    @State private var editDraft = ""
+    @State private var longPressScale: CGFloat = 1.0
+
+    private let swipeThreshold: CGFloat = 72
+
     var body: some View {
+        ZStack {
+            // ── Swipe reveal backgrounds ───────────────────────────────
+            // Right-swipe: green complete background
+            RoundedRectangle(cornerRadius: 11)
+                .fill(Theme.green.opacity(min(0.28, dragX / (swipeThreshold * 1.5))))
+                .overlay(alignment: .leading) {
+                    QIcon(name: "check", size: 18, color: Theme.green)
+                        .padding(.leading, 16)
+                        .opacity(min(1, dragX / swipeThreshold))
+                        .scaleEffect(0.4 + 0.6 * min(1, dragX / swipeThreshold))
+                }
+                .opacity(dragX > 0 ? 1 : 0)
+
+            // Left-swipe: red delete background
+            RoundedRectangle(cornerRadius: 11)
+                .fill(Color.red.opacity(min(0.22, -dragX / (swipeThreshold * 1.5))))
+                .overlay(alignment: .trailing) {
+                    QIcon(name: "trash", size: 17, color: Color.red)
+                        .padding(.trailing, 16)
+                        .opacity(min(1, -dragX / swipeThreshold))
+                        .scaleEffect(0.4 + 0.6 * min(1, -dragX / swipeThreshold))
+                }
+                .opacity(dragX < 0 ? 1 : 0)
+
+            // ── Row content ───────────────────────────────────────────
+            rowContent
+                .offset(x: dragX)
+                .scaleEffect(longPressScale)
+                .animation(.spring(response: 0.15, dampingFraction: 0.5), value: longPressScale)
+        }
+        // Swipe gesture
+        .gesture(
+            DragGesture(minimumDistance: 15, coordinateSpace: .local)
+                .onChanged { v in
+                    let dx = v.translation.width
+                    let dy = v.translation.height
+                    // Only commit to horizontal swipes
+                    guard abs(dx) > abs(dy) else { return }
+                    // Right swipe blocked if already done
+                    if dx > 0 && task.isDone { return }
+                    // Left swipe blocked if no delete handler
+                    if dx < 0 && onDelete == nil { return }
+                    dragX = dx
+                }
+                .onEnded { v in
+                    let dx = v.translation.width
+                    if dx >= swipeThreshold && !task.isDone {
+                        // Complete ✓
+                        Haptics.softPop()
+                        task.isDone = true
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { dragX = 0 }
+                    } else if dx <= -swipeThreshold, let del = onDelete {
+                        // Delete ✕
+                        Haptics.pop()
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) { dragX = -420 }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { del() }
+                    } else {
+                        // Spring back
+                        withAnimation(.spring(response: 0.38, dampingFraction: 0.70)) { dragX = 0 }
+                    }
+                }
+        )
+        // Long press to edit
+        .onLongPressGesture(minimumDuration: 0.45, maximumDistance: 10) {
+            editDraft = task.title
+            Haptics.pop()
+            // Pop scale up then settle
+            withAnimation(.spring(response: 0.15, dampingFraction: 0.4)) { longPressScale = 1.05 }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.55)) { longPressScale = 1.0 }
+                showEditModal = true
+            }
+        }
+        .sheet(isPresented: $showEditModal) {
+            EditTaskModal(task: task, draft: $editDraft)
+        }
+    }
+
+    // MARK: - Row content
+
+    @ViewBuilder
+    private var rowContent: some View {
         HStack(spacing: 10) {
             // Checkbox
             Button {
@@ -216,18 +308,16 @@ struct TaskRow: View {
                     }
                 }
                 .frame(width: 18, height: 18)
-                // The unchecked box is a .clear fill, which doesn't hit-test —
-                // without this only the 1.5pt border ring is clickable.
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            // Title
+            // Title — wraps instead of truncating
             Text(task.title)
                 .font(.qText(13.5))
                 .foregroundStyle(task.isDone ? Theme.ink2 : Theme.ink)
                 .strikethrough(task.isDone, color: Theme.ink2)
-                .lineLimit(1)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             // Carried badge
@@ -263,7 +353,7 @@ struct TaskRow: View {
                 }
             }
 
-            // Delete
+            // Explicit delete button (shown in setup / carried tasks)
             if let onDelete {
                 Button(action: onDelete) {
                     QIcon(name: "x", size: 13, color: Theme.ink3)
@@ -283,6 +373,57 @@ struct TaskRow: View {
                     lineWidth: 1
                 )
         )
-        .hoverLift(1.0)   // shadow only; scaling rows in a list reads as jitter
+        .hoverLift(1.0)
+    }
+}
+
+// MARK: - Edit task modal
+
+struct EditTaskModal: View {
+    @Bindable var task: FocusTask
+    @Binding var draft: String
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Edit task")
+                .font(.qText(16, weight: .bold))
+                .foregroundStyle(Theme.ink)
+
+            TextField("Task name", text: $draft)
+                .textFieldStyle(.plain)
+                .font(.qText(14))
+                .foregroundStyle(Theme.ink)
+                .padding(.horizontal, 13)
+                .frame(height: 46)
+                .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11)
+                        .strokeBorder(Theme.accent, lineWidth: 1.5)
+                )
+                .focused($isFocused)
+                .onSubmit { save() }
+
+            HStack(spacing: 10) {
+                Spacer()
+                Button("Cancel") { dismiss() }
+                    .buttonStyle(OutlineButtonStyle(tint: Theme.ink2))
+                Button("Save") { save() }
+                    .buttonStyle(AccentButtonStyle())
+                    .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+        .padding(24)
+        .presentationDetents([.height(196)])
+        .presentationBackground(.ultraThinMaterial)
+        .presentationCornerRadius(24)
+        .onAppear { isFocused = true }
+    }
+
+    private func save() {
+        let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { task.title = trimmed }
+        dismiss()
     }
 }
