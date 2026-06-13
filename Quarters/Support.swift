@@ -4,7 +4,18 @@ import CoreText
 import AppKit
 #else
 import AudioToolbox
+import UIKit
 #endif
+
+enum Haptics {
+    /// Light selection tick for the quarter dial. No-op on macOS.
+    static func tick() {
+        #if os(iOS)
+        let g = UISelectionFeedbackGenerator()
+        g.selectionChanged()
+        #endif
+    }
+}
 
 enum Fonts {
     /// macOS loads bundled fonts via the ATSApplicationFontsPath Info.plist

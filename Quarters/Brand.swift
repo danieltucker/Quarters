@@ -274,6 +274,12 @@ struct QuarterPicker: View {
     var size: CGFloat = 120
     @State private var hovering = false
 
+    // iPod-wheel drag state: accumulate signed rotation since the touch began.
+    @State private var lastAngle: Double? = nil
+    @State private var accumulated: Double = 0
+    @State private var dragStartQuarters = 0
+    @State private var moved = false
+
     var body: some View {
         ZStack {
             Circle()
@@ -294,13 +300,52 @@ struct QuarterPicker: View {
         .animation(.spring(response: 0.55, dampingFraction: 0.68), value: quarters)
         .animation(.easeOut(duration: 0.15), value: hovering)
         .onHover { hovering = $0 }
-        .onTapGesture { location in
-            let dx = location.x - size / 2
-            let dy = location.y - size / 2
-            var angle = atan2(dy, dx) * 180 / .pi + 90  // rotate so 0° = 12 o'clock
-            if angle < 0 { angle += 360 }
-            let tapped = Int(angle / 90) + 1             // 1…4
-            quarters = min(4, max(1, tapped))
-        }
+        .gesture(
+            // Drag around the dial like an iPod click wheel: clockwise adds
+            // time, counter-clockwise removes. A 90° sweep = one quarter, the
+            // same arc each quarter fills visually. A touch that never moves
+            // falls through to tap-to-select.
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    let ang = angle(at: value.location)
+                    guard let last = lastAngle else {
+                        lastAngle = ang
+                        dragStartQuarters = quarters
+                        accumulated = 0
+                        moved = false
+                        return
+                    }
+                    var delta = ang - last
+                    if delta > 180 { delta -= 360 }      // unwrap across 9 o'clock
+                    if delta < -180 { delta += 360 }
+                    accumulated += delta
+                    if abs(accumulated) > 6 { moved = true }
+                    lastAngle = ang
+
+                    let target = dragStartQuarters + Int((accumulated / 90).rounded())
+                    let clamped = min(4, max(1, target))
+                    if clamped != quarters {
+                        quarters = clamped
+                        Haptics.tick()
+                    }
+                }
+                .onEnded { value in
+                    if !moved {
+                        var a = angle(at: value.location) + 90   // 0° = 12 o'clock
+                        if a < 0 { a += 360 }
+                        let tapped = min(4, max(1, Int(a / 90) + 1))
+                        if tapped != quarters {
+                            quarters = tapped
+                            Haptics.tick()
+                        }
+                    }
+                    lastAngle = nil
+                    moved = false
+                }
+        )
+    }
+
+    private func angle(at p: CGPoint) -> Double {
+        atan2(p.y - size / 2, p.x - size / 2) * 180 / .pi   // 0° = 3 o'clock, +cw
     }
 }
