@@ -13,6 +13,7 @@ enum AppTab: String, CaseIterable {
 struct ContentView: View {
     @Environment(\.modelContext) private var context
     @State private var tab: AppTab = .focus
+    @Namespace private var tabNS
 
     @Query private var ledger: [LedgerEntry]
     @Query(filter: #Predicate<Session> {
@@ -28,6 +29,12 @@ struct ContentView: View {
     @State private var celebrationToken = UUID()
     @State private var spendFlights: [CoinFlightSpec] = []
 
+    // The chip shows `displayedBalance`, which lags the true balance during a
+    // coin flight so it can tick up/down by one as each coin lands. When no
+    // flight is running it tracks `balance` exactly.
+    @State private var displayedBalance = 0
+    @State private var animatingBalance = false
+
     private var balance: Int { ledger.reduce(0) { $0 + $1.delta } }
 
     var body: some View {
@@ -39,7 +46,7 @@ struct ContentView: View {
             // padded header row under the status bar.
             HStack {
                 Spacer()
-                QCoinChip(balance: balance)
+                QCoinChip(balance: displayedBalance)
             }
             .padding(.trailing, 18)
             .modifier(HeaderStripStyle())
@@ -74,7 +81,15 @@ struct ContentView: View {
         .modifier(WindowChrome())
         .overlay { coinFlightLayer }
         .overlay { celebrationLayer }
-        .onAppear(perform: seedRewardsIfNeeded)
+        .onAppear {
+            seedRewardsIfNeeded()
+            displayedBalance = balance
+        }
+        // Snap to the real balance for any change that isn't an in-flight
+        // coin animation (e.g. launch, or a redeem with the popup disabled).
+        .onChange(of: balance) { _, new in
+            if !animatingBalance { displayedBalance = new }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .qCoinsCollected)) { note in
             guard let amount = note.userInfo?["amount"] as? Int else { return }
             playCoinFlight(amount: amount)
@@ -90,7 +105,12 @@ struct ContentView: View {
     private var tabBar: some View {
         HStack(spacing: 4) {
             ForEach(AppTab.allCases, id: \.self) { t in
-                TabSegment(tab: t, isActive: tab == t) { tab = t }
+                TabSegment(tab: t, isActive: tab == t, ns: tabNS) {
+                    // Underdamped spring → the pill slides and wiggles as it stops.
+                    withAnimation(.spring(response: 0.38, dampingFraction: 0.6)) {
+                        tab = t
+                    }
+                }
             }
         }
         .padding(4)
@@ -110,13 +130,19 @@ struct ContentView: View {
             ZStack {
                 ForEach(coinFlights) { flight in
                     CoinFlightView(
+                        // Launch from the Collect button area, low and centered,
+                        // so coins appear to fly up from behind it.
                         start: CGPoint(x: geo.size.width / 2 + flight.dx,
-                                       y: geo.size.height * 0.55),
+                                       y: geo.size.height * 0.6),
                         target: CGPoint(x: geo.size.width - 52, y: 26),
                         delay: flight.delay
                     ) {
                         coinFlights.removeAll { $0.id == flight.id }
                         Sounds.clink()
+                        // Each coin that lands ticks the counter up one.
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
+                            displayedBalance += 1
+                        }
                     }
                 }
 
@@ -158,6 +184,9 @@ struct ContentView: View {
                         ) {
                             spendFlights.removeAll { $0.id == flight.id }
                             Sounds.clink()
+                            withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
+                                displayedBalance -= 1
+                            }
                             withAnimation(.spring(response: 0.2, dampingFraction: 0.4)) {
                                 celebrationHits += 1
                             }
@@ -174,6 +203,7 @@ struct ContentView: View {
                        "Well earned.", "Make it count!", "Savor it."]
         celebrationHits = 0
         spendFlights.removeAll()
+        animatingBalance = true   // hold the chip; coins tick it down on landing
         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
             celebration = RedeemCelebration(icon: icon, name: name, cost: amount,
                                             phrase: phrases.randomElement()!)
@@ -194,6 +224,8 @@ struct ContentView: View {
         withAnimation(.easeOut(duration: 0.25)) { celebration = nil }
         spendFlights.removeAll()
         celebrationHits = 0
+        animatingBalance = false
+        displayedBalance = balance
     }
 
     // One sprite per coin, so the size of a haul is visible — spending 950
@@ -211,6 +243,7 @@ struct ContentView: View {
     }
 
     private func playCoinFlight(amount: Int) {
+        animatingBalance = true   // hold the chip at the pre-collect value
         let specs = flightSpecs(amount: amount, baseDelay: 0, spread: -60...60)
         coinFlights.append(contentsOf: specs)
         let pourEnd = (specs.last?.delay ?? 0) + 0.75
@@ -220,6 +253,9 @@ struct ContentView: View {
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + pourEnd + 1.2) {
             withAnimation(.easeOut(duration: 0.4)) { gainAmount = nil }
+            // Reconcile in case per-hit ticks drifted from the true total.
+            animatingBalance = false
+            displayedBalance = balance
         }
     }
 }
@@ -340,6 +376,7 @@ private struct CoinFlightEffect: ViewModifier, Animatable {
 private struct TabSegment: View {
     let tab: AppTab
     let isActive: Bool
+    var ns: Namespace.ID
     let action: () -> Void
     @State private var hovering = false
 
@@ -352,9 +389,12 @@ private struct TabSegment: View {
                 .padding(.vertical, 7)
                 .background {
                     if isActive {
+                        // One shared pill slides between segments via the
+                        // matched geometry; the spring on `tab` does the motion.
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Theme.card)
                             .qShadow()
+                            .matchedGeometryEffect(id: "activeTab", in: ns)
                     } else if hovering {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Theme.card.opacity(0.45))
