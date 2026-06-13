@@ -15,6 +15,23 @@ enum Haptics {
         g.selectionChanged()
         #endif
     }
+
+    private static var lastCoin = Date.distantPast
+
+    /// Soft tap synced with each coin landing. Throttled to match the
+    /// clink cadence (60ms) so a big pour taps rather than buzzes.
+    static func coin() {
+        let now = Date()
+        guard now.timeIntervalSince(lastCoin) > 0.06 else { return }
+        lastCoin = now
+        #if os(iOS)
+        let g = UIImpactFeedbackGenerator(style: .light)
+        g.impactOccurred(intensity: 0.7)
+        #elseif os(macOS)
+        // Felt on Force Touch trackpads; silently ignored elsewhere.
+        NSHapticFeedbackManager.defaultPerformer.perform(.generic, performanceTime: .now)
+        #endif
+    }
 }
 
 enum Fonts {

@@ -139,6 +139,7 @@ struct ContentView: View {
                     ) {
                         coinFlights.removeAll { $0.id == flight.id }
                         Sounds.clink()
+                        Haptics.coin()
                         // Each coin that lands ticks the counter up one.
                         withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
                             displayedBalance += 1
@@ -184,6 +185,7 @@ struct ContentView: View {
                         ) {
                             spendFlights.removeAll { $0.id == flight.id }
                             Sounds.clink()
+                            Haptics.coin()
                             withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
                                 displayedBalance -= 1
                             }
