@@ -48,54 +48,58 @@ struct CheckoffView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // ── Result header ─────────────────────────────────────────
-            VStack(spacing: 6) {
-                QCoin(size: 28)
-                    .opacity(session.wasEndedEarly ? 0.45 : 1)
-
-                Text(session.wasEndedEarly ? "Session ended early" : "Time's up")
-                    .font(.qText(15, weight: .semibold))
-                    .foregroundStyle(Theme.ink2)
-
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("+\(totalPoints)")
-                        .font(.qDisplay(32))
-                        .foregroundStyle(Theme.coin)
-                    Text("coins")
-                        .font(.qText(16, weight: .semibold))
-                        .foregroundStyle(Theme.coinDeep)
-                }
-
-                if let breakdown = breakdownLine {
-                    Text(breakdown)
-                        .font(.qMono(11))
-                        .foregroundStyle(Theme.ink2)
-                }
-            }
-            .padding(.bottom, 20)
-
-            // ── Task checkoff ─────────────────────────────────────────
-            SectionLabel("What got done? Unchecked items carry over.")
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, 10)
-
+            // Header + task list scroll; the Collect button stays pinned to
+            // the bottom of the window.
             ScrollView {
-                VStack(spacing: 7) {
-                    ForEach(sortedTasks) { task in
-                        TaskRow(task: task, showBigToggle: false)
-                    }
-                }
-            }
-            .frame(maxHeight: 220)
-            .padding(.bottom, 14)
+                VStack(spacing: 0) {
+                    // ── Result header ─────────────────────────────────
+                    VStack(spacing: 6) {
+                        QCoin(size: 28)
+                            .opacity(session.wasEndedEarly ? 0.45 : 1)
 
+                        Text(session.wasEndedEarly ? "Session ended early" : "Time's up")
+                            .font(.qText(15, weight: .semibold))
+                            .foregroundStyle(Theme.ink2)
+
+                        HStack(alignment: .firstTextBaseline, spacing: 4) {
+                            Text("+\(totalPoints)")
+                                .font(.qDisplay(32))
+                                .foregroundStyle(Theme.coin)
+                            Text("coins")
+                                .font(.qText(16, weight: .semibold))
+                                .foregroundStyle(Theme.coinDeep)
+                        }
+
+                        if let breakdown = breakdownLine {
+                            Text(breakdown)
+                                .font(.qMono(11))
+                                .foregroundStyle(Theme.ink2)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 20)
+
+                    // ── Task checkoff ─────────────────────────────────
+                    SectionLabel("What got done? Unchecked items carry over.")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.bottom, 10)
+
+                    VStack(spacing: 7) {
+                        ForEach(sortedTasks) { task in
+                            TaskRow(task: task, showBigToggle: false)
+                        }
+                    }
+                    .padding(.bottom, 4)
+                }
+                .padding(.top, 8)
+            }
+
+            // ── Collect (pinned to bottom) ────────────────────────────
             Button("Collect \(totalPoints) coins", action: collect)
                 .buttonStyle(AccentButtonStyle(wide: true))
-
-            Spacer()
+                .padding(.top, 12)
         }
         .padding(.horizontal, 22)
-        .padding(.top, 8)
         .padding(.bottom, 22)
         .onAppear(perform: Notifications.clearDelivered)
     }

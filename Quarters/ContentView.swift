@@ -130,10 +130,10 @@ struct ContentView: View {
             ZStack {
                 ForEach(coinFlights) { flight in
                     CoinFlightView(
-                        // Launch from the Collect button area, low and centered,
-                        // so coins appear to fly up from behind it.
+                        // Launch from behind the Collect button, pinned at the
+                        // bottom, so coins appear to spill out and fly up to the chip.
                         start: CGPoint(x: geo.size.width / 2 + flight.dx,
-                                       y: geo.size.height * 0.6),
+                                       y: geo.size.height - 48),
                         target: CGPoint(x: geo.size.width - 52, y: 26),
                         delay: flight.delay
                     ) {

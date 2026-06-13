@@ -43,84 +43,88 @@ struct RunningView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // ── QRing timer ───────────────────────────────────────────
-            ZStack {
-                QRing(
-                    size: 216,
-                    totalQuarters: session.blockCount,
-                    completedQuarters: completedQuarters,
-                    currentProgress: quarterProgress,
-                    thickness: 11
-                )
-
-                VStack(spacing: 2) {
-                    Text(timeString(remaining))
-                        .font(.qMono(44, weight: .semibold))
-                        .foregroundStyle(Theme.ink)
-                        .monospacedDigit()
-
-                    Text("Quarter \(currentQuarter) of \(session.blockCount)".uppercased())
-                        .font(.qText(11.5, weight: .bold))
-                        .kerning(1.0)
-                        .foregroundStyle(Theme.accent)
-                }
-            }
-            .padding(.top, 8)
-
-            // ── Caption ───────────────────────────────────────────────
-            Group {
-                if completedQuarters == 0 {
-                    Text("First coin is \(minsToNextCoin) minute\(minsToNextCoin == 1 ? "" : "s") away.")
-                } else {
-                    Text("\(completedQuarters) coin\(completedQuarters == 1 ? "" : "s") minted — the next is \(minsToNextCoin) minute\(minsToNextCoin == 1 ? "" : "s") away.")
-                }
-            }
-            .font(.qText(12.5))
-            .foregroundStyle(Theme.ink2)
-            .multilineTextAlignment(.center)
-            .padding(.top, 12)
-            .padding(.bottom, 18)
-
-            // ── Session goals (scrolls; ring and footer stay fixed) ───
-            SectionLabel("Session goals",
-                         right: "\(doneCount) of \(sortedTasks.count) done")
-                .padding(.bottom, 10)
-
+            // Everything above the footer scrolls, so the ring can move out
+            // of the way in landscape where it would otherwise hide the goals.
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(spacing: 7) {
-                        ForEach(sortedTasks) { task in
-                            TaskRow(task: task, showBigToggle: true)
+                    VStack(spacing: 0) {
+                        // ── QRing timer ───────────────────────────────
+                        ZStack {
+                            QRing(
+                                size: 216,
+                                totalQuarters: session.blockCount,
+                                completedQuarters: completedQuarters,
+                                currentProgress: quarterProgress,
+                                thickness: 11
+                            )
+
+                            VStack(spacing: 2) {
+                                Text(timeString(remaining))
+                                    .font(.qMono(44, weight: .semibold))
+                                    .foregroundStyle(Theme.ink)
+                                    .monospacedDigit()
+
+                                Text("Quarter \(currentQuarter) of \(session.blockCount)".uppercased())
+                                    .font(.qText(11.5, weight: .bold))
+                                    .kerning(1.0)
+                                    .foregroundStyle(Theme.accent)
+                            }
                         }
+                        .padding(.top, 8)
 
-                        // ── Add task inline ───────────────────────────
-                        HStack(spacing: 8) {
-                            TextField("Add a task…", text: $draft)
-                                .textFieldStyle(.plain)
-                                .font(.qText(13.5))
-                                .foregroundStyle(Theme.ink)
-                                .padding(.horizontal, 13)
-                                .frame(height: 40)
-                                .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
-                                .overlay(RoundedRectangle(cornerRadius: 11)
-                                    .strokeBorder(Theme.line2, lineWidth: 1.5))
-                                .focused($inputFocused)
-                                .onSubmit(addTask)
+                        // ── Caption ───────────────────────────────────
+                        Group {
+                            if completedQuarters == 0 {
+                                Text("First coin is \(minsToNextCoin) minute\(minsToNextCoin == 1 ? "" : "s") away.")
+                            } else {
+                                Text("\(completedQuarters) coin\(completedQuarters == 1 ? "" : "s") minted — the next is \(minsToNextCoin) minute\(minsToNextCoin == 1 ? "" : "s") away.")
+                            }
+                        }
+                        .font(.qText(12.5))
+                        .foregroundStyle(Theme.ink2)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 12)
+                        .padding(.bottom, 18)
 
-                            Button(action: addTask) {
-                                QIcon(name: "plus", size: 16, color: Theme.ink2)
-                                    .frame(width: 40, height: 40)
+                        // ── Session goals ─────────────────────────────
+                        SectionLabel("Session goals",
+                                     right: "\(doneCount) of \(sortedTasks.count) done")
+                            .padding(.bottom, 10)
+
+                        VStack(spacing: 7) {
+                            ForEach(sortedTasks) { task in
+                                TaskRow(task: task, showBigToggle: true)
+                            }
+
+                            // ── Add task inline ───────────────────────
+                            HStack(spacing: 8) {
+                                TextField("Add a task…", text: $draft)
+                                    .textFieldStyle(.plain)
+                                    .font(.qText(13.5))
+                                    .foregroundStyle(Theme.ink)
+                                    .padding(.horizontal, 13)
+                                    .frame(height: 40)
                                     .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                                     .overlay(RoundedRectangle(cornerRadius: 11)
                                         .strokeBorder(Theme.line2, lineWidth: 1.5))
-                                    .contentShape(Rectangle())
+                                    .focused($inputFocused)
+                                    .onSubmit(addTask)
+
+                                Button(action: addTask) {
+                                    QIcon(name: "plus", size: 16, color: Theme.ink2)
+                                        .frame(width: 40, height: 40)
+                                        .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
+                                        .overlay(RoundedRectangle(cornerRadius: 11)
+                                            .strokeBorder(Theme.line2, lineWidth: 1.5))
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
+                            .padding(.top, 3)
+                            .id("addRow")
                         }
-                        .padding(.top, 3)
-                        .id("addRow")
+                        .padding(.bottom, 4)
                     }
-                    .padding(.bottom, 4)
                 }
                 // Keep the add row above the keyboard when it appears.
                 .onChange(of: inputFocused) { _, focused in
