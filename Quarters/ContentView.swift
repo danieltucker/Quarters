@@ -7,7 +7,7 @@ import AppKit
 enum AppTab: String, CaseIterable {
     case focus   = "Focus"
     case rewards = "Rewards"
-    case ledger  = "Ledger"
+    case archive = "Archive"
 }
 
 struct ContentView: View {
@@ -72,8 +72,8 @@ struct ContentView: View {
                     }
                 case .rewards:
                     RewardsView(balance: balance)
-                case .ledger:
-                    LedgerView()
+                case .archive:
+                    ArchiveView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

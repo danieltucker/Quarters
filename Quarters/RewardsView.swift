@@ -18,6 +18,7 @@ struct RewardsView: View {
     @State private var editMode = false
     @State private var formTarget: RewardFormTarget?
     @State private var draggedReward: Reward?
+    @State private var showLedger = false
 
     @Query(filter: #Predicate<Reward> { !$0.isArchived },
            sort: \Reward.sortOrder) private var rewards: [Reward]
@@ -66,6 +67,34 @@ struct RewardsView: View {
                     .overlay(RoundedRectangle(cornerRadius: 11).strokeBorder(Theme.line, lineWidth: 1))
                     .padding(.bottom, 14)
                 }
+
+                // ── Ledger access ──────────────────────────────────────
+                if !editMode {
+                    Button { showLedger = true } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "list.bullet.rectangle")
+                                .font(.system(size: 14))
+                                .foregroundStyle(Theme.ink2)
+                            Text("Ledger")
+                                .font(.qText(13, weight: .semibold))
+                                .foregroundStyle(Theme.ink)
+                            Spacer()
+                            Text("Every coin earned & spent")
+                                .font(.qText(11.5))
+                                .foregroundStyle(Theme.ink3)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(Theme.ink3)
+                        }
+                        .padding(12)
+                        .frame(maxWidth: .infinity)
+                        .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
+                        .overlay(RoundedRectangle(cornerRadius: 11).strokeBorder(Theme.line, lineWidth: 1))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .hoverLift()
+                }
             }
             .padding(.horizontal, 22)
             .padding(.vertical, 8)
@@ -78,6 +107,10 @@ struct RewardsView: View {
         }
         .sheet(item: $formTarget) { target in
             RewardForm(reward: target.reward, nextSortOrder: rewards.count)
+        }
+        .sheet(isPresented: $showLedger) {
+            LedgerView()
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -137,15 +170,11 @@ struct RewardsView: View {
         .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.line, lineWidth: 1))
         .qShadow()
         .hoverLift()
-        .opacity(draggedReward === reward ? 0.45 : 1)
-        .onDrag {
-            draggedReward = reward
-            return NSItemProvider(object: String(reward.sortOrder) as NSString)
-        }
-        .onDrop(of: [.text],
-                delegate: RewardDropDelegate(item: reward,
-                                             dragged: $draggedReward,
-                                             rewards: rewards))
+        // Drag-to-reorder only in edit mode. Outside it, a press-and-hold to
+        // read or redeem must not start a drag (that left cards stuck ghosted,
+        // since .onDrag has no release callback when dropped in place).
+        .modifier(RewardDragModifier(reward: reward, enabled: editMode,
+                                     dragged: $draggedReward, rewards: rewards))
     }
 
     @ViewBuilder
@@ -227,6 +256,33 @@ struct RewardsView: View {
 // Reorders live as the dragged card passes over its siblings; sortOrder is
 // rewritten on every pass so the @Query (sorted by sortOrder) animates the
 // grid into the new arrangement.
+
+// Attaches drag-to-reorder only when editing, so casual press-and-hold
+// outside edit mode never starts a drag.
+private struct RewardDragModifier: ViewModifier {
+    let reward: Reward
+    let enabled: Bool
+    @Binding var dragged: Reward?
+    let rewards: [Reward]
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if enabled {
+            content
+                .opacity(dragged === reward ? 0.5 : 1)
+                .onDrag {
+                    dragged = reward
+                    return NSItemProvider(object: String(reward.sortOrder) as NSString)
+                }
+                .onDrop(of: [.text],
+                        delegate: RewardDropDelegate(item: reward,
+                                                     dragged: $dragged,
+                                                     rewards: rewards))
+        } else {
+            content
+        }
+    }
+}
 
 private struct RewardDropDelegate: DropDelegate {
     let item: Reward
