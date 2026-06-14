@@ -18,7 +18,6 @@ struct RewardsView: View {
     @State private var editMode = false
     @State private var formTarget: RewardFormTarget?
     @State private var draggedReward: Reward?
-    @State private var showLedger = false
 
     @Query(filter: #Predicate<Reward> { !$0.isArchived },
            sort: \Reward.sortOrder) private var rewards: [Reward]
@@ -68,32 +67,10 @@ struct RewardsView: View {
                     .padding(.bottom, 14)
                 }
 
-                // ── Ledger access ──────────────────────────────────────
+                // ── Ledger preview (recent activity + link to full history) ─
                 if !editMode {
-                    Button { showLedger = true } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "list.bullet.rectangle")
-                                .font(.system(size: 14))
-                                .foregroundStyle(Theme.ink2)
-                            Text("Ledger")
-                                .font(.qText(13, weight: .semibold))
-                                .foregroundStyle(Theme.ink)
-                            Spacer()
-                            Text("Every coin earned & spent")
-                                .font(.qText(11.5))
-                                .foregroundStyle(Theme.ink3)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(Theme.ink3)
-                        }
-                        .padding(12)
-                        .frame(maxWidth: .infinity)
-                        .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
-                        .overlay(RoundedRectangle(cornerRadius: 11).strokeBorder(Theme.line, lineWidth: 1))
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .hoverLift()
+                    LedgerPreview()
+                        .padding(.top, 4)
                 }
             }
             .padding(.horizontal, 22)
@@ -107,10 +84,6 @@ struct RewardsView: View {
         }
         .sheet(item: $formTarget) { target in
             RewardForm(reward: target.reward, nextSortOrder: rewards.count)
-        }
-        .sheet(isPresented: $showLedger) {
-            LedgerView()
-                .presentationDragIndicator(.visible)
         }
     }
 

@@ -127,9 +127,78 @@ struct LedgerView: View {
     }
 }
 
+// MARK: - Ledger preview
+// Compact recap embedded on the Rewards screen: the three stat tiles, the
+// last week of entries, and a link into the full ledger.
+
+struct LedgerPreview: View {
+    @Query(filter: #Predicate<Session> { $0.statusRaw == "completed" },
+           sort: \Session.startedAt, order: .reverse) private var sessions: [Session]
+    @Query(sort: \LedgerEntry.timestamp, order: .reverse) private var ledger: [LedgerEntry]
+    @Query private var dailyLogs: [DailyLog]
+    @State private var showFull = false
+
+    private var thisWeekQuarters: Int {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: .now)!
+        return sessions
+            .filter { $0.startedAt >= cutoff }
+            .reduce(0) { $0 + ($1.wasEndedEarly ? $1.completedBlocksAtEnd : $1.blockCount) }
+    }
+    private var mintedTotal: Int { ledger.filter { $0.delta > 0 }.reduce(0) { $0 + $1.delta } }
+    private var streakDays: Int { AppConfig.streak(from: dailyLogs) }
+    private var recent: [LedgerEntry] {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: .now)!
+        return Array(ledger.filter { $0.timestamp >= cutoff }.prefix(7))
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionLabel("Recent activity")
+
+            HStack(spacing: 8) {
+                StatTile(label: "This week", value: "\(thisWeekQuarters)",
+                         unit: "quarter\(thisWeekQuarters == 1 ? "" : "s")")
+                StatTile(label: "Minted", value: "+\(mintedTotal)", unit: "coins")
+                StatTile(label: "Streak", value: "\(streakDays)",
+                         unit: "day\(streakDays == 1 ? "" : "s")")
+            }
+
+            if recent.isEmpty {
+                Text("No activity in the last week.")
+                    .font(.qText(12.5))
+                    .foregroundStyle(Theme.ink3)
+                    .padding(.vertical, 6)
+            } else {
+                VStack(spacing: 7) {
+                    ForEach(recent) { entry in LedgerRow(entry: entry) }
+                }
+            }
+
+            Button { showFull = true } label: {
+                HStack(spacing: 6) {
+                    Text("View full history")
+                        .font(.qText(12.5, weight: .semibold))
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                }
+                .foregroundStyle(Theme.accent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 11))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+        .sheet(isPresented: $showFull) {
+            LedgerView()
+                .presentationDragIndicator(.visible)
+        }
+    }
+}
+
 // MARK: - Stat tile
 
-private struct StatTile: View {
+struct StatTile: View {
     let label: String
     let value: String
     let unit: String
@@ -156,7 +225,7 @@ private struct StatTile: View {
 
 // MARK: - Ledger row
 
-private struct LedgerRow: View {
+struct LedgerRow: View {
     let entry: LedgerEntry
 
     private var isEarn: Bool { entry.delta > 0 }

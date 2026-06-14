@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var tab: AppTab = .focus
     @Namespace private var tabNS
     @State private var tabBarWidth: CGFloat = 0
+    @State private var contentWidth: CGFloat = 0
 
     @Query private var ledger: [LedgerEntry]
     @Query(filter: #Predicate<Session> {
@@ -77,6 +78,31 @@ struct ContentView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(
+                GeometryReader { g in
+                    Color.clear
+                        .onAppear { contentWidth = g.size.width }
+                        .onChange(of: g.size.width) { _, w in contentWidth = w }
+                }
+            )
+            // Edge-swipe to change tabs: a horizontal swipe starting near the
+            // left or right edge moves between Focus / Rewards / Archive.
+            // Simultaneous + edge-gated so it never steals vertical scroll or
+            // the quarter dial in the center.
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 24)
+                    .onEnded { v in
+                        let dx = v.translation.width
+                        let dy = v.translation.height
+                        guard abs(dx) > 60, abs(dx) > abs(dy) * 1.6 else { return }
+                        let startX = v.startLocation.x
+                        if dx > 0 && startX < 56 {
+                            switchTab(by: -1)            // swipe right from left edge → previous
+                        } else if dx < 0 && startX > contentWidth - 56 {
+                            switchTab(by: 1)             // swipe left from right edge → next
+                        }
+                    }
+            )
         }
         .background(Theme.bg)
         .modifier(WindowChrome())
@@ -143,6 +169,15 @@ struct ContentView: View {
         Haptics.land()
     }
 
+    private func switchTab(by delta: Int) {
+        let tabs = AppTab.allCases
+        guard let idx = tabs.firstIndex(of: tab) else { return }
+        let next = idx + delta
+        guard next >= 0 && next < tabs.count else { return }
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.6)) { tab = tabs[next] }
+        Haptics.land()
+    }
+
     private func seedRewardsIfNeeded() {
         guard allRewards.isEmpty else { return }
         Reward.seedDefaults(into: context)
@@ -192,8 +227,10 @@ struct ContentView: View {
         if let celebration {
             GeometryReader { geo in
                 ZStack {
-                    // Backdrop: dims the app and blocks a second buy click
+                    // Backdrop: dims the app and blocks a second buy click.
+                    // ignoresSafeArea so it covers the title-bar strip too.
                     Color.black.opacity(0.22)
+                        .ignoresSafeArea()
                         .onTapGesture { dismissCelebration() }
                         .transition(.opacity)
 
