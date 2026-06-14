@@ -34,52 +34,56 @@ struct SetupView: View {
                         .padding(.bottom, 14)
 
                     // ── Quarter picker + details ──────────────────────────
-                    HStack(alignment: .center, spacing: 22) {
-                        QuarterPicker(quarters: $quarters, size: 120)
+                    VStack(spacing: 16) {
+                        HStack(alignment: .center, spacing: 22) {
+                            QuarterPicker(quarters: $quarters, size: 120)
 
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("\(quarters) quarter\(quarters == 1 ? "" : "s")")
-                                .font(.qDisplay(24))
-                                .foregroundStyle(Theme.ink)
-                                .contentTransition(.numericText(value: Double(quarters)))
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("\(quarters) quarter\(quarters == 1 ? "" : "s")")
+                                    .font(.qDisplay(24))
+                                    .foregroundStyle(Theme.ink)
+                                    .contentTransition(.numericText(value: Double(quarters)))
 
-                            (Text("\(minutes) minutes · mints ")
-                                .font(.qText(13))
-                                .foregroundStyle(Theme.ink2)
-                            + Text("\(coinCount) coin\(coinCount == 1 ? "" : "s")")
-                                .font(.qText(13, weight: .bold))
-                                .foregroundStyle(Theme.ink))
-                                .contentTransition(.numericText(value: Double(coinCount)))
-
-                            // Duration chips
-                            HStack(spacing: 6) {
-                                ForEach([1, 2, 3, 4], id: \.self) { q in
-                                    let active = q == quarters
-                                    Button { quarters = q } label: {
-                                        Text("\(q * 15)m")
-                                            .font(.qMono(13, weight: .semibold))
-                                            .padding(.vertical, 7)
-                                            .padding(.horizontal, 13)
-                                            .background(
-                                                active ? Theme.accent : Theme.card,
-                                                in: RoundedRectangle(cornerRadius: 9)
-                                            )
-                                            .foregroundStyle(active ? Theme.onAccent : Theme.ink2)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 9)
-                                                    .strokeBorder(
-                                                        active ? Theme.accentDeep : Theme.line,
-                                                        lineWidth: 1
-                                                    )
-                                            )
-                                            .scaleEffect(active ? 1.07 : 1)
-                                            .contentShape(Rectangle())
-                                            .hoverLift(1.06)
-                                    }
-                                    .buttonStyle(.plain)
-                                }
+                                (Text("\(minutes) minutes · mints ")
+                                    .font(.qText(13))
+                                    .foregroundStyle(Theme.ink2)
+                                + Text("\(coinCount) coin\(coinCount == 1 ? "" : "s")")
+                                    .font(.qText(13, weight: .bold))
+                                    .foregroundStyle(Theme.ink))
+                                    .contentTransition(.numericText(value: Double(coinCount)))
                             }
-                            .padding(.top, 4)
+
+                            Spacer(minLength: 0)
+                        }
+
+                        // Duration chips — own full-width row, four equal
+                        // segments, single line so they never wrap.
+                        HStack(spacing: 8) {
+                            ForEach([1, 2, 3, 4], id: \.self) { q in
+                                let active = q == quarters
+                                Button { quarters = q } label: {
+                                    Text("\(q * 15)m")
+                                        .font(.qMono(13, weight: .semibold))
+                                        .lineLimit(1)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 9)
+                                        .background(
+                                            active ? Theme.accent : Theme.card,
+                                            in: RoundedRectangle(cornerRadius: 9)
+                                        )
+                                        .foregroundStyle(active ? Theme.onAccent : Theme.ink2)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 9)
+                                                .strokeBorder(
+                                                    active ? Theme.accentDeep : Theme.line,
+                                                    lineWidth: 1
+                                                )
+                                        )
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                .scaleEffect(active ? 1.04 : 1)
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity)
