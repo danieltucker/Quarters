@@ -15,6 +15,8 @@ struct SetupView: View {
     @State private var pendingDeletes: Set<PersistentIdentifier> = []
     private var committedBacklog: [FocusTask] { backlog.filter { !pendingDeletes.contains($0.id) } }
 
+    @State private var showReorder = false
+
     @Query private var dailyLogs: [DailyLog]
     private var streakDays: Int { AppConfig.streak(from: dailyLogs) }
 
@@ -89,8 +91,16 @@ struct SetupView: View {
                     .padding(.bottom, 20)
 
                     // ── Goals ─────────────────────────────────────────────
-                    SectionLabel("What will you get done?", right: "+1 coin per task")
-                        .padding(.bottom, 10)
+                    HStack {
+                        SectionLabel("What will you get done?",
+                                     right: backlog.count > 1 ? nil : "+1 coin per task")
+                        if backlog.count > 1 {
+                            Spacer()
+                            Button("Reorder") { showReorder = true }
+                                .buttonStyle(OutlineButtonStyle(tint: Theme.ink2))
+                        }
+                    }
+                    .padding(.bottom, 10)
 
                     // Add goal input
                     HStack(spacing: 8) {
@@ -127,15 +137,13 @@ struct SetupView: View {
                             .padding(.vertical, 8)
                     } else {
                         VStack(spacing: 7) {
-                            ForEach(Array(backlog.enumerated()), id: \.element.id) { index, task in
+                            ForEach(backlog) { task in
                                 Group {
                                     if pendingDeletes.contains(task.id) {
                                         UndoDeleteRow { undoDelete(task) }
                                     } else {
-                                        TaskRow(task: task, showBigToggle: true, reorderable: true,
-                                                onDelete: { requestDelete(task) },
-                                                onMoveUp:   index > 0                  ? { moveTask(task, up: true)  } : nil,
-                                                onMoveDown: index < backlog.count - 1  ? { moveTask(task, up: false) } : nil)
+                                        TaskRow(task: task, showBigToggle: true,
+                                                onDelete: { requestDelete(task) })
                                     }
                                 }
                                 .transition(.asymmetric(
@@ -163,19 +171,10 @@ struct SetupView: View {
             .onAppear { initializeSortOrdersIfNeeded() }
             }
 
-            // ── Start button (always pinned to bottom) ────────────────
+            // ── Start button (pinned to the very bottom) ──────────────
+            // Streak hint sits above the button so the button is the last
+            // element, flush to the bottom edge (tighter on iOS).
             VStack(spacing: 0) {
-                Button(action: start) {
-                    HStack(spacing: 9) {
-                        QIcon(name: "play", size: 15, color: Theme.onAccent)
-                        Text("Start \(minutes)-minute session")
-                    }
-                }
-                .buttonStyle(AccentButtonStyle(wide: true))
-                .disabled(committedBacklog.isEmpty)
-                .opacity(committedBacklog.isEmpty ? 0.4 : 1)
-
-                // Streak hint
                 HStack(spacing: 4) {
                     Text(streakDays > 0
                          ? "\(streakDays)-day streak · +\(String(format: "%g", AppConfig.streakBonusPercent(forDays: streakDays)))% coins · finish today to keep it"
@@ -187,16 +186,41 @@ struct SetupView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)
-                .padding(.top, 9)
+                .padding(.bottom, 9)
+
+                Button(action: start) {
+                    HStack(spacing: 9) {
+                        QIcon(name: "play", size: 15, color: Theme.onAccent)
+                        Text("Start \(minutes)-minute session")
+                    }
+                }
+                .buttonStyle(AccentButtonStyle(wide: true))
+                .disabled(committedBacklog.isEmpty)
+                .opacity(committedBacklog.isEmpty ? 0.4 : 1)
             }
             .padding(.horizontal, 22)
             .padding(.top, 12)
-            .padding(.bottom, 22)
+            .padding(.bottom, startButtonBottomPadding)
         }
         // Tap any empty area to dismiss the keyboard (rows/buttons/field
         // capture their own taps first).
         .contentShape(Rectangle())
         .onTapGesture { goalFocused = false }
+        .sheet(isPresented: $showReorder) {
+            ReorderSheet(tasks: backlog) { ordered in
+                for (i, task) in ordered.enumerated() { task.sortOrder = i }
+            }
+        }
+    }
+
+    // iOS: hug the bottom edge (safe area still keeps it off the home
+    // indicator). macOS: keep the roomier inset.
+    private var startButtonBottomPadding: CGFloat {
+        #if os(iOS)
+        6
+        #else
+        22
+        #endif
     }
 
     private func addTask() {
@@ -221,21 +245,6 @@ struct SetupView: View {
         guard tasks.count > 1, tasks.allSatisfy({ $0.sortOrder == 0 }) else { return }
         let sorted = tasks.sorted { $0.createdAt < $1.createdAt }
         for (i, task) in sorted.enumerated() { task.sortOrder = i }
-    }
-
-    /// Swap the task one position up or down in the sorted backlog.
-    private func moveTask(_ task: FocusTask, up: Bool) {
-        let tasks = backlog   // computed fresh each call
-        guard let idx = tasks.firstIndex(where: { $0.id == task.id }) else { return }
-        let targetIdx = up ? idx - 1 : idx + 1
-        guard targetIdx >= 0 && targetIdx < tasks.count else { return }
-        let other = tasks[targetIdx]
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-            let temp = task.sortOrder
-            task.sortOrder = other.sortOrder
-            other.sortOrder = temp
-        }
-        Haptics.tick()
     }
 
     private func start() {
@@ -275,61 +284,23 @@ struct SetupView: View {
 struct TaskRow: View {
     @Bindable var task: FocusTask
     var showBigToggle: Bool = true
-    var reorderable: Bool = false
     var onDelete: (() -> Void)? = nil
-    var onMoveUp: (() -> Void)? = nil
-    var onMoveDown: (() -> Void)? = nil
 
-    // Edit + reorder state
     @State private var showEditModal = false
     @State private var editDraft = ""
-    @State private var lifted = false        // picked up for reorder
-    @State private var movedSteps = 0        // slots moved this drag
-
-    // One slot ≈ row height + spacing. Crossing this much drag moves one place.
-    private let slotHeight: CGFloat = 54
 
     var body: some View {
         rowContent
-            .scaleEffect(lifted ? 1.04 : 1)
-            .shadow(color: .black.opacity(lifted ? 0.18 : 0), radius: lifted ? 12 : 0, y: 4)
-            .zIndex(lifted ? 10 : 0)
-            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: lifted)
             .contentShape(Rectangle())
             // Tap anywhere on the row (outside the controls) opens edit.
+            // No drag gesture lives on the row, so the ScrollView scrolls
+            // freely; reordering happens in a dedicated sheet.
             .onTapGesture {
                 editDraft = task.title
                 showEditModal = true
             }
-            // Long-press to pick up, then drag to move one slot at a time.
-            // Gating reorder behind the hold means a normal finger-drag is never
-            // captured here, so the enclosing ScrollView pans freely.
-            .gesture(reorderGesture, including: reorderable ? .all : .subviews)
             .sheet(isPresented: $showEditModal) {
                 EditTaskModal(task: task, draft: $editDraft)
-            }
-    }
-
-    private var reorderGesture: some Gesture {
-        LongPressGesture(minimumDuration: 0.5)
-            .sequenced(before: DragGesture(minimumDistance: 0))
-            .onChanged { value in
-                guard case .second(true, let drag?) = value else { return }
-                if !lifted {
-                    lifted = true
-                    movedSteps = 0
-                    Haptics.pop()
-                }
-                let desired = Int((drag.translation.height / slotHeight).rounded())
-                if desired > movedSteps, let down = onMoveDown {
-                    down(); movedSteps += 1; Haptics.tick()
-                } else if desired < movedSteps, let up = onMoveUp {
-                    up(); movedSteps -= 1; Haptics.tick()
-                }
-            }
-            .onEnded { _ in
-                lifted = false
-                movedSteps = 0
             }
     }
 
@@ -451,6 +422,71 @@ struct UndoDeleteRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Reorder sheet
+// Native List + .onMove gives real drag-to-reorder that works on both iOS and
+// macOS. Reordering mutates a local copy for smoothness; the new order is
+// written back to sortOrder on Done.
+
+struct ReorderSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var items: [FocusTask]
+    let onCommit: ([FocusTask]) -> Void
+
+    init(tasks: [FocusTask], onCommit: @escaping ([FocusTask]) -> Void) {
+        _items = State(initialValue: tasks)
+        self.onCommit = onCommit
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Reorder goals")
+                    .font(.qText(16, weight: .bold))
+                    .foregroundStyle(Theme.ink)
+                Spacer()
+                Button("Done") {
+                    onCommit(items)
+                    dismiss()
+                }
+                .buttonStyle(AccentButtonStyle())
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 12)
+
+            List {
+                ForEach(items) { task in
+                    HStack(spacing: 10) {
+                        if task.isBig {
+                            QIcon(name: "bolt", size: 13, color: Theme.accent)
+                        }
+                        Text(task.title)
+                            .font(.qText(14))
+                            .foregroundStyle(Theme.ink)
+                            .lineLimit(1)
+                        Spacer()
+                    }
+                    .padding(.vertical, 6)
+                    .listRowBackground(Theme.card)
+                    .listRowSeparatorTint(Theme.line)
+                }
+                .onMove { items.move(fromOffsets: $0, toOffset: $1) }
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            #if os(iOS)
+            .environment(\.editMode, .constant(.active))
+            #endif
+        }
+        .frame(minWidth: 340, minHeight: 360)
+        .background(Theme.bg)
+        #if os(iOS)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        #endif
     }
 }
 

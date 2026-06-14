@@ -9,6 +9,7 @@ struct RunningView: View {
     @State private var draft = ""
     @FocusState private var inputFocused: Bool
     @State private var pendingDeletes: Set<PersistentIdentifier> = []
+    @State private var showReorder = false
 
     private let tick = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
@@ -90,9 +91,19 @@ struct RunningView: View {
                         .padding(.bottom, 18)
 
                         // ── Session goals ─────────────────────────────
-                        SectionLabel("Session goals",
-                                     right: "\(doneCount) of \(sortedTasks.count) done")
-                            .padding(.bottom, 10)
+                        HStack {
+                            SectionLabel("Session goals",
+                                         right: sortedTasks.count > 1 ? nil : "\(doneCount) of \(sortedTasks.count) done")
+                            if sortedTasks.count > 1 {
+                                Spacer()
+                                Text("\(doneCount)/\(sortedTasks.count)")
+                                    .font(.qText(12, weight: .semibold))
+                                    .foregroundStyle(Theme.green)
+                                Button("Reorder") { showReorder = true }
+                                    .buttonStyle(OutlineButtonStyle(tint: Theme.ink2))
+                            }
+                        }
+                        .padding(.bottom, 10)
 
                         // ── Add task inline (at top, matching SetupView) ──
                         HStack(spacing: 8) {
@@ -122,15 +133,13 @@ struct RunningView: View {
                         .id("addRow")
 
                         VStack(spacing: 7) {
-                            ForEach(Array(sortedTasks.enumerated()), id: \.element.id) { index, task in
+                            ForEach(sortedTasks) { task in
                                 Group {
                                     if pendingDeletes.contains(task.id) {
                                         UndoDeleteRow { undoDelete(task) }
                                     } else {
-                                        TaskRow(task: task, showBigToggle: true, reorderable: true,
-                                                onDelete: { requestDelete(task) },
-                                                onMoveUp:   index > 0                      ? { moveSessionTask(task, up: true)  } : nil,
-                                                onMoveDown: index < sortedTasks.count - 1  ? { moveSessionTask(task, up: false) } : nil)
+                                        TaskRow(task: task, showBigToggle: true,
+                                                onDelete: { requestDelete(task) })
                                     }
                                 }
                                 .transition(.asymmetric(
@@ -164,6 +173,11 @@ struct RunningView: View {
         .padding(.bottom, 22)
         .contentShape(Rectangle())
         .onTapGesture { inputFocused = false }
+        .sheet(isPresented: $showReorder) {
+            ReorderSheet(tasks: sortedTasks) { ordered in
+                for (i, task) in ordered.enumerated() { task.sortOrder = i }
+            }
+        }
         .onReceive(tick) { date in
             now = date
             checkForCompletion()
@@ -197,21 +211,6 @@ struct RunningView: View {
         guard tasks.count > 1, tasks.allSatisfy({ $0.sortOrder == 0 }) else { return }
         let sorted = tasks.sorted { $0.createdAt < $1.createdAt }
         for (i, task) in sorted.enumerated() { task.sortOrder = i }
-    }
-
-    /// Swap the session task one position up or down in the sorted list.
-    private func moveSessionTask(_ task: FocusTask, up: Bool) {
-        let tasks = sortedTasks   // computed fresh each call
-        guard let idx = tasks.firstIndex(where: { $0.id == task.id }) else { return }
-        let targetIdx = up ? idx - 1 : idx + 1
-        guard targetIdx >= 0 && targetIdx < tasks.count else { return }
-        let other = tasks[targetIdx]
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-            let temp = task.sortOrder
-            task.sortOrder = other.sortOrder
-            other.sortOrder = temp
-        }
-        Haptics.tick()
     }
 
     // MARK: - Undo-delete
