@@ -252,6 +252,9 @@ struct SetupView: View {
         context.insert(session)
         for task in committedBacklog { task.session = session }
         Notifications.scheduleSessionEnd(at: session.endTime, blockCount: quarters)
+        LiveActivity.start(startDate: session.startedAt,
+                           endDate: session.endTime,
+                           totalQuarters: quarters)
     }
 
     // MARK: - Undo-delete

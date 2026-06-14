@@ -182,6 +182,14 @@ struct RunningView: View {
             now = date
             checkForCompletion()
         }
+        // Refresh the Live Activity's "Quarter X of Y" + progress each time a
+        // quarter is minted (the countdown itself ticks on its own).
+        .onChange(of: completedQuarters) { _, completed in
+            LiveActivity.update(startDate: session.startedAt,
+                                endDate: session.endTime,
+                                totalQuarters: session.blockCount,
+                                completedQuarters: completed)
+        }
         .onAppear {
             initializeTaskSortOrdersIfNeeded()
             checkForCompletion()
@@ -240,6 +248,7 @@ struct RunningView: View {
         session.completedBlocksAtEnd = Int(elapsed / AppConfig.blockSeconds)
         session.status = .awaitingCheckoff
         Notifications.cancelSessionEnd()
+        LiveActivity.end()
     }
 
     private func checkForCompletion() {
@@ -248,6 +257,7 @@ struct RunningView: View {
             session.completedBlocksAtEnd = session.blockCount
             session.status = .awaitingCheckoff
             Sounds.tripleBeep()
+            LiveActivity.end()
         }
     }
 
