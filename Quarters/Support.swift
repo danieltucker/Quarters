@@ -74,6 +74,15 @@ enum Haptics {
     }
 }
 
+/// Resign the first responder so the on-screen keyboard dismisses. No-op on
+/// macOS, where tapping elsewhere already ends field editing.
+func dismissKeyboard() {
+    #if os(iOS)
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
+                                    to: nil, from: nil, for: nil)
+    #endif
+}
+
 enum Fonts {
     /// macOS loads bundled fonts via the ATSApplicationFontsPath Info.plist
     /// key; iOS has no equivalent that works with a generated Info.plist,

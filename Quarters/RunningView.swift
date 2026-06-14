@@ -8,6 +8,7 @@ struct RunningView: View {
     @State private var now = Date.now
     @State private var draft = ""
     @FocusState private var inputFocused: Bool
+    @State private var pendingDeletes: Set<PersistentIdentifier> = []
 
     private let tick = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
@@ -26,7 +27,9 @@ struct RunningView: View {
     }
 
     private var sortedTasks: [FocusTask] {
-        session.tasks.sorted { $0.createdAt < $1.createdAt }
+        session.tasks
+            .filter { !$0.isArchived }
+            .sorted { $0.sortOrder < $1.sortOrder }
     }
     private var doneCount: Int { sortedTasks.filter { $0.isDone }.count }
     private var taskPtsEarned: Int {
@@ -119,12 +122,26 @@ struct RunningView: View {
                         .id("addRow")
 
                         VStack(spacing: 7) {
-                            ForEach(sortedTasks) { task in
-                                TaskRow(task: task, showBigToggle: true, onDelete: {
-                                    context.delete(task)
-                                })
+                            ForEach(Array(sortedTasks.enumerated()), id: \.element.id) { index, task in
+                                Group {
+                                    if pendingDeletes.contains(task.id) {
+                                        UndoDeleteRow { undoDelete(task) }
+                                    } else {
+                                        TaskRow(task: task, showBigToggle: true, reorderable: true,
+                                                onDelete: { requestDelete(task) },
+                                                onMoveUp:   index > 0                      ? { moveSessionTask(task, up: true)  } : nil,
+                                                onMoveDown: index < sortedTasks.count - 1  ? { moveSessionTask(task, up: false) } : nil)
+                                    }
+                                }
+                                .transition(.asymmetric(
+                                    insertion: .scale(scale: 0.88, anchor: .top).combined(with: .opacity),
+                                    removal: .opacity
+                                ))
                             }
                         }
+                        .animation(.spring(response: 0.38, dampingFraction: 0.8),
+                                   value: sortedTasks.map(\.sortOrder))
+                        .animation(.easeInOut(duration: 0.25), value: pendingDeletes)
                         .padding(.bottom, 4)
                     }
                 }
@@ -145,11 +162,16 @@ struct RunningView: View {
         }
         .padding(.horizontal, 22)
         .padding(.bottom, 22)
+        .contentShape(Rectangle())
+        .onTapGesture { inputFocused = false }
         .onReceive(tick) { date in
             now = date
             checkForCompletion()
         }
-        .onAppear { checkForCompletion() }
+        .onAppear {
+            initializeTaskSortOrdersIfNeeded()
+            checkForCompletion()
+        }
     }
 
     // MARK: - Actions
@@ -157,10 +179,61 @@ struct RunningView: View {
     private func addTask() {
         let title = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else { return }
+        let minOrder = sortedTasks.map(\.sortOrder).min() ?? 0
         let task = FocusTask(title: title)
-        context.insert(task)
+        task.sortOrder = minOrder - 1
         task.session = session
         draft = ""
+        inputFocused = false   // dismiss keyboard
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+            context.insert(task)
+        }
+        Haptics.pop()
+    }
+
+    /// Assign unique sort orders to session tasks that all have the default (0).
+    private func initializeTaskSortOrdersIfNeeded() {
+        let tasks = session.tasks
+        guard tasks.count > 1, tasks.allSatisfy({ $0.sortOrder == 0 }) else { return }
+        let sorted = tasks.sorted { $0.createdAt < $1.createdAt }
+        for (i, task) in sorted.enumerated() { task.sortOrder = i }
+    }
+
+    /// Swap the session task one position up or down in the sorted list.
+    private func moveSessionTask(_ task: FocusTask, up: Bool) {
+        let tasks = sortedTasks   // computed fresh each call
+        guard let idx = tasks.firstIndex(where: { $0.id == task.id }) else { return }
+        let targetIdx = up ? idx - 1 : idx + 1
+        guard targetIdx >= 0 && targetIdx < tasks.count else { return }
+        let other = tasks[targetIdx]
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            let temp = task.sortOrder
+            task.sortOrder = other.sortOrder
+            other.sortOrder = temp
+        }
+        Haptics.tick()
+    }
+
+    // MARK: - Undo-delete
+
+    private func requestDelete(_ task: FocusTask) {
+        let id = task.id
+        Haptics.pop()
+        withAnimation(.easeInOut(duration: 0.25)) { _ = pendingDeletes.insert(id) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+            guard pendingDeletes.contains(id) else { return }
+            withAnimation(.easeInOut(duration: 0.3)) {
+                context.delete(task)
+                pendingDeletes.remove(id)
+            }
+        }
+    }
+
+    private func undoDelete(_ task: FocusTask) {
+        Haptics.tick()
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            pendingDeletes.remove(task.id)
+        }
     }
 
     private func endEarly() {

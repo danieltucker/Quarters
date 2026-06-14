@@ -7,8 +7,13 @@ struct SetupView: View {
     @State private var draft = ""
     @FocusState private var goalFocused: Bool
 
-    @Query(sort: \FocusTask.createdAt) private var allTasks: [FocusTask]
-    private var backlog: [FocusTask] { allTasks.filter { $0.session == nil } }
+    @Query(sort: \FocusTask.sortOrder) private var allTasks: [FocusTask]
+    private var backlog: [FocusTask] { allTasks.filter { $0.session == nil && !$0.isArchived } }
+
+    // Tasks awaiting their undo window; rendered as an "Undo delete" placeholder
+    // and permanently removed when the window lapses.
+    @State private var pendingDeletes: Set<PersistentIdentifier> = []
+    private var committedBacklog: [FocusTask] { backlog.filter { !pendingDeletes.contains($0.id) } }
 
     @Query private var dailyLogs: [DailyLog]
     private var streakDays: Int { AppConfig.streak(from: dailyLogs) }
@@ -122,12 +127,26 @@ struct SetupView: View {
                             .padding(.vertical, 8)
                     } else {
                         VStack(spacing: 7) {
-                            ForEach(backlog) { task in
-                                TaskRow(task: task, showBigToggle: true, onDelete: {
-                                    context.delete(task)
-                                })
+                            ForEach(Array(backlog.enumerated()), id: \.element.id) { index, task in
+                                Group {
+                                    if pendingDeletes.contains(task.id) {
+                                        UndoDeleteRow { undoDelete(task) }
+                                    } else {
+                                        TaskRow(task: task, showBigToggle: true, reorderable: true,
+                                                onDelete: { requestDelete(task) },
+                                                onMoveUp:   index > 0                  ? { moveTask(task, up: true)  } : nil,
+                                                onMoveDown: index < backlog.count - 1  ? { moveTask(task, up: false) } : nil)
+                                    }
+                                }
+                                .transition(.asymmetric(
+                                    insertion: .scale(scale: 0.88, anchor: .top).combined(with: .opacity),
+                                    removal: .opacity
+                                ))
                             }
                         }
+                        .animation(.spring(response: 0.38, dampingFraction: 0.8),
+                                   value: backlog.map(\.sortOrder))
+                        .animation(.easeInOut(duration: 0.25), value: pendingDeletes)
                     }
                 }
                 .padding(.horizontal, 22)
@@ -141,6 +160,7 @@ struct SetupView: View {
                     proxy.scrollTo("addGoal", anchor: .center)
                 }
             }
+            .onAppear { initializeSortOrdersIfNeeded() }
             }
 
             // ── Start button (always pinned to bottom) ────────────────
@@ -152,8 +172,8 @@ struct SetupView: View {
                     }
                 }
                 .buttonStyle(AccentButtonStyle(wide: true))
-                .disabled(backlog.isEmpty)
-                .opacity(backlog.isEmpty ? 0.4 : 1)
+                .disabled(committedBacklog.isEmpty)
+                .opacity(committedBacklog.isEmpty ? 0.4 : 1)
 
                 // Streak hint
                 HStack(spacing: 4) {
@@ -173,21 +193,80 @@ struct SetupView: View {
             .padding(.top, 12)
             .padding(.bottom, 22)
         }
+        // Tap any empty area to dismiss the keyboard (rows/buttons/field
+        // capture their own taps first).
+        .contentShape(Rectangle())
+        .onTapGesture { goalFocused = false }
     }
 
     private func addTask() {
         let title = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else { return }
-        context.insert(FocusTask(title: title))
-        try? context.save()
+        // New tasks go to the TOP of the list (lowest sortOrder wins).
+        let minOrder = backlog.map(\.sortOrder).min() ?? 0
+        let task = FocusTask(title: title)
+        task.sortOrder = minOrder - 1
         draft = ""
+        goalFocused = false   // dismiss keyboard immediately
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+            context.insert(task)
+        }
+        Haptics.pop()
+    }
+
+    /// Assign unique sort orders to any group of tasks all sitting at the
+    /// default value (0). Runs once on first appearance after a migration.
+    private func initializeSortOrdersIfNeeded() {
+        let tasks = allTasks.filter { $0.session == nil }
+        guard tasks.count > 1, tasks.allSatisfy({ $0.sortOrder == 0 }) else { return }
+        let sorted = tasks.sorted { $0.createdAt < $1.createdAt }
+        for (i, task) in sorted.enumerated() { task.sortOrder = i }
+    }
+
+    /// Swap the task one position up or down in the sorted backlog.
+    private func moveTask(_ task: FocusTask, up: Bool) {
+        let tasks = backlog   // computed fresh each call
+        guard let idx = tasks.firstIndex(where: { $0.id == task.id }) else { return }
+        let targetIdx = up ? idx - 1 : idx + 1
+        guard targetIdx >= 0 && targetIdx < tasks.count else { return }
+        let other = tasks[targetIdx]
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            let temp = task.sortOrder
+            task.sortOrder = other.sortOrder
+            other.sortOrder = temp
+        }
+        Haptics.tick()
     }
 
     private func start() {
         let session = Session(blockCount: quarters)
         context.insert(session)
-        for task in backlog { task.session = session }
+        for task in committedBacklog { task.session = session }
         Notifications.scheduleSessionEnd(at: session.endTime, blockCount: quarters)
+    }
+
+    // MARK: - Undo-delete
+
+    /// Mark a task pending-delete: it becomes an "Undo delete" placeholder for
+    /// a few seconds, then is permanently removed if the window lapses.
+    private func requestDelete(_ task: FocusTask) {
+        let id = task.id
+        Haptics.pop()
+        withAnimation(.easeInOut(duration: 0.25)) { _ = pendingDeletes.insert(id) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+            guard pendingDeletes.contains(id) else { return }   // undone in the meantime
+            withAnimation(.easeInOut(duration: 0.3)) {
+                context.delete(task)
+                pendingDeletes.remove(id)
+            }
+        }
+    }
+
+    private func undoDelete(_ task: FocusTask) {
+        Haptics.tick()
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            pendingDeletes.remove(task.id)
+        }
     }
 }
 
@@ -196,95 +275,62 @@ struct SetupView: View {
 struct TaskRow: View {
     @Bindable var task: FocusTask
     var showBigToggle: Bool = true
+    var reorderable: Bool = false
     var onDelete: (() -> Void)? = nil
+    var onMoveUp: (() -> Void)? = nil
+    var onMoveDown: (() -> Void)? = nil
 
-    // Swipe gesture state
-    @State private var dragX: CGFloat = 0
-
-    // Long-press / edit state
+    // Edit + reorder state
     @State private var showEditModal = false
     @State private var editDraft = ""
-    @State private var longPressScale: CGFloat = 1.0
+    @State private var lifted = false        // picked up for reorder
+    @State private var movedSteps = 0        // slots moved this drag
 
-    private let swipeThreshold: CGFloat = 72
+    // One slot ≈ row height + spacing. Crossing this much drag moves one place.
+    private let slotHeight: CGFloat = 54
 
     var body: some View {
-        ZStack {
-            // ── Swipe reveal backgrounds ───────────────────────────────
-            // Right-swipe: green complete background
-            RoundedRectangle(cornerRadius: 11)
-                .fill(Theme.green.opacity(min(0.28, dragX / (swipeThreshold * 1.5))))
-                .overlay(alignment: .leading) {
-                    QIcon(name: "check", size: 18, color: Theme.green)
-                        .padding(.leading, 16)
-                        .opacity(min(1, dragX / swipeThreshold))
-                        .scaleEffect(0.4 + 0.6 * min(1, dragX / swipeThreshold))
-                }
-                .opacity(dragX > 0 ? 1 : 0)
-
-            // Left-swipe: red delete background
-            RoundedRectangle(cornerRadius: 11)
-                .fill(Color.red.opacity(min(0.22, -dragX / (swipeThreshold * 1.5))))
-                .overlay(alignment: .trailing) {
-                    QIcon(name: "trash", size: 17, color: Color.red)
-                        .padding(.trailing, 16)
-                        .opacity(min(1, -dragX / swipeThreshold))
-                        .scaleEffect(0.4 + 0.6 * min(1, -dragX / swipeThreshold))
-                }
-                .opacity(dragX < 0 ? 1 : 0)
-
-            // ── Row content ───────────────────────────────────────────
-            rowContent
-                .offset(x: dragX)
-                .scaleEffect(longPressScale)
-                .animation(.spring(response: 0.15, dampingFraction: 0.5), value: longPressScale)
-        }
-        // Swipe gesture
-        .gesture(
-            DragGesture(minimumDistance: 15, coordinateSpace: .local)
-                .onChanged { v in
-                    let dx = v.translation.width
-                    let dy = v.translation.height
-                    // Only commit to horizontal swipes
-                    guard abs(dx) > abs(dy) else { return }
-                    // Right swipe blocked if already done
-                    if dx > 0 && task.isDone { return }
-                    // Left swipe blocked if no delete handler
-                    if dx < 0 && onDelete == nil { return }
-                    dragX = dx
-                }
-                .onEnded { v in
-                    let dx = v.translation.width
-                    if dx >= swipeThreshold && !task.isDone {
-                        // Complete ✓
-                        Haptics.softPop()
-                        task.isDone = true
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { dragX = 0 }
-                    } else if dx <= -swipeThreshold, let del = onDelete {
-                        // Delete ✕
-                        Haptics.pop()
-                        withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) { dragX = -420 }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { del() }
-                    } else {
-                        // Spring back
-                        withAnimation(.spring(response: 0.38, dampingFraction: 0.70)) { dragX = 0 }
-                    }
-                }
-        )
-        // Long press to edit
-        .onLongPressGesture(minimumDuration: 0.45, maximumDistance: 10) {
-            editDraft = task.title
-            Haptics.pop()
-            // Pop scale up then settle
-            withAnimation(.spring(response: 0.15, dampingFraction: 0.4)) { longPressScale = 1.05 }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.55)) { longPressScale = 1.0 }
+        rowContent
+            .scaleEffect(lifted ? 1.04 : 1)
+            .shadow(color: .black.opacity(lifted ? 0.18 : 0), radius: lifted ? 12 : 0, y: 4)
+            .zIndex(lifted ? 10 : 0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: lifted)
+            .contentShape(Rectangle())
+            // Tap anywhere on the row (outside the controls) opens edit.
+            .onTapGesture {
+                editDraft = task.title
                 showEditModal = true
             }
-        }
-        .sheet(isPresented: $showEditModal) {
-            EditTaskModal(task: task, draft: $editDraft)
-        }
+            // Long-press to pick up, then drag to move one slot at a time.
+            // Gating reorder behind the hold means a normal finger-drag is never
+            // captured here, so the enclosing ScrollView pans freely.
+            .gesture(reorderGesture, including: reorderable ? .all : .subviews)
+            .sheet(isPresented: $showEditModal) {
+                EditTaskModal(task: task, draft: $editDraft)
+            }
+    }
+
+    private var reorderGesture: some Gesture {
+        LongPressGesture(minimumDuration: 0.5)
+            .sequenced(before: DragGesture(minimumDistance: 0))
+            .onChanged { value in
+                guard case .second(true, let drag?) = value else { return }
+                if !lifted {
+                    lifted = true
+                    movedSteps = 0
+                    Haptics.pop()
+                }
+                let desired = Int((drag.translation.height / slotHeight).rounded())
+                if desired > movedSteps, let down = onMoveDown {
+                    down(); movedSteps += 1; Haptics.tick()
+                } else if desired < movedSteps, let up = onMoveUp {
+                    up(); movedSteps -= 1; Haptics.tick()
+                }
+            }
+            .onEnded { _ in
+                lifted = false
+                movedSteps = 0
+            }
     }
 
     // MARK: - Row content
@@ -377,6 +423,37 @@ struct TaskRow: View {
     }
 }
 
+// MARK: - Undo-delete placeholder
+// Holds a deleted task's slot for the undo window: a dashed outline that
+// fades out when the window lapses or the row is restored.
+
+struct UndoDeleteRow: View {
+    var onUndo: () -> Void
+
+    var body: some View {
+        Button(action: onUndo) {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.uturn.backward")
+                    .font(.system(size: 12, weight: .semibold))
+                Text("Undo delete")
+                    .font(.qText(13, weight: .semibold))
+                Spacer()
+            }
+            .foregroundStyle(Theme.ink3)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 11)
+                    .strokeBorder(Theme.line2,
+                                  style: StrokeStyle(lineWidth: 1.5, dash: [5]))
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - Edit task modal
 
 struct EditTaskModal: View {
@@ -386,7 +463,7 @@ struct EditTaskModal: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Edit task")
                 .font(.qText(16, weight: .bold))
                 .foregroundStyle(Theme.ink)
@@ -406,6 +483,21 @@ struct EditTaskModal: View {
                 .onSubmit { save() }
 
             HStack(spacing: 10) {
+                // Archive moves the task out of the active list
+                Button {
+                    task.isArchived = true
+                    dismiss()
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "archivebox")
+                            .font(.system(size: 11))
+                        Text("Archive")
+                            .font(.qText(13))
+                    }
+                    .foregroundStyle(Theme.ink3)
+                }
+                .buttonStyle(.plain)
+
                 Spacer()
                 Button("Cancel") { dismiss() }
                     .buttonStyle(OutlineButtonStyle(tint: Theme.ink2))
@@ -415,7 +507,7 @@ struct EditTaskModal: View {
             }
         }
         .padding(24)
-        .presentationDetents([.height(196)])
+        .presentationDetents([.height(216)])
         .presentationBackground(.ultraThinMaterial)
         .presentationCornerRadius(24)
         .onAppear { isFocused = true }
