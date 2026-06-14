@@ -58,40 +58,52 @@ struct LedgerView: View {
     // MARK: - Body
 
     var body: some View {
-        if ledger.isEmpty && sessions.isEmpty {
-            emptyState
-        } else {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    statTiles
-                        .padding(.bottom, 18)
+        VStack(alignment: .leading, spacing: 0) {
+            // Sheet header (no nav bar when presented as a sheet)
+            Text("Ledger")
+                .font(.qDisplay(20))
+                .foregroundStyle(Theme.ink)
+                .padding(.horizontal, 22)
+                .padding(.top, 22)
+                .padding(.bottom, 14)
 
-                    if groupedEntries.isEmpty {
-                        Text("No entries yet.")
-                            .font(.qText(13))
-                            .foregroundStyle(Theme.ink3)
-                    } else {
-                        ForEach(groupedEntries, id: \.label) { group in
-                            // Day header
-                            Text(group.label)
-                                .font(.qText(11, weight: .bold))
-                                .kerning(0.5)
-                                .foregroundStyle(Theme.ink2)
-                                .padding(.bottom, 8)
-
-                            VStack(spacing: 7) {
-                                ForEach(group.entries) { entry in
-                                    LedgerRow(entry: entry)
-                                }
-                            }
+            if ledger.isEmpty && sessions.isEmpty {
+                emptyState
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        statTiles
                             .padding(.bottom, 18)
+
+                        if groupedEntries.isEmpty {
+                            Text("No entries yet.")
+                                .font(.qText(13))
+                                .foregroundStyle(Theme.ink3)
+                        } else {
+                            ForEach(groupedEntries, id: \.label) { group in
+                                // Day header
+                                Text(group.label)
+                                    .font(.qText(11, weight: .bold))
+                                    .kerning(0.5)
+                                    .foregroundStyle(Theme.ink2)
+                                    .padding(.bottom, 8)
+
+                                VStack(spacing: 7) {
+                                    ForEach(group.entries) { entry in
+                                        LedgerRow(entry: entry)
+                                    }
+                                }
+                                .padding(.bottom, 18)
+                            }
                         }
                     }
+                    .padding(.horizontal, 22)
+                    .padding(.bottom, 24)
                 }
-                .padding(.horizontal, 22)
-                .padding(.vertical, 8)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Theme.bg)
     }
 
     // MARK: - Stat tiles

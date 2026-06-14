@@ -57,16 +57,16 @@ struct SetupView: View {
                                     let active = q == quarters
                                     Button { quarters = q } label: {
                                         Text("\(q * 15)m")
-                                            .font(.qMono(11.5, weight: .semibold))
-                                            .padding(.vertical, 4)
-                                            .padding(.horizontal, 9)
+                                            .font(.qMono(13, weight: .semibold))
+                                            .padding(.vertical, 7)
+                                            .padding(.horizontal, 13)
                                             .background(
                                                 active ? Theme.accent : Theme.card,
-                                                in: RoundedRectangle(cornerRadius: 7)
+                                                in: RoundedRectangle(cornerRadius: 9)
                                             )
                                             .foregroundStyle(active ? Theme.onAccent : Theme.ink2)
                                             .overlay(
-                                                RoundedRectangle(cornerRadius: 7)
+                                                RoundedRectangle(cornerRadius: 9)
                                                     .strokeBorder(
                                                         active ? Theme.accentDeep : Theme.line,
                                                         lineWidth: 1
@@ -142,7 +142,7 @@ struct SetupView: View {
                                     if pendingDeletes.contains(task.id) {
                                         UndoDeleteRow { undoDelete(task) }
                                     } else {
-                                        TaskRow(task: task, showBigToggle: true,
+                                        TaskRow(task: task, showCheckbox: false, showBigToggle: true,
                                                 onDelete: { requestDelete(task) })
                                     }
                                 }
@@ -283,6 +283,7 @@ struct SetupView: View {
 
 struct TaskRow: View {
     @Bindable var task: FocusTask
+    var showCheckbox: Bool = true
     var showBigToggle: Bool = true
     var onDelete: (() -> Void)? = nil
 
@@ -309,25 +310,28 @@ struct TaskRow: View {
     @ViewBuilder
     private var rowContent: some View {
         HStack(spacing: 10) {
-            // Checkbox
-            Button {
-                task.isDone.toggle()
-            } label: {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 6)
-                        .strokeBorder(task.isDone ? .clear : Theme.line2, lineWidth: 1.5)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(task.isDone ? Theme.green : .clear)
-                        )
-                    if task.isDone {
-                        QIcon(name: "check", size: 12, color: Theme.card)
+            // Checkbox — only while a session can mark goals done. In setup
+            // (no running timer) goals have nothing to check off yet.
+            if showCheckbox {
+                Button {
+                    task.isDone.toggle()
+                } label: {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 6)
+                            .strokeBorder(task.isDone ? .clear : Theme.line2, lineWidth: 1.5)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(task.isDone ? Theme.green : .clear)
+                            )
+                        if task.isDone {
+                            QIcon(name: "check", size: 12, color: Theme.card)
+                        }
                     }
+                    .frame(width: 18, height: 18)
+                    .contentShape(Rectangle())
                 }
-                .frame(width: 18, height: 18)
-                .contentShape(Rectangle())
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
 
             // Title — wraps instead of truncating
             Text(task.title)
