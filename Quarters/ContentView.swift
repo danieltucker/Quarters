@@ -388,8 +388,10 @@ private struct CoinEditorSheet: View {
             }
         }
         .padding(22)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .frame(minWidth: 320)
-        .background(Theme.bg)
+        // Color the whole sheet (incl. the empty detent area), not just content.
+        .presentationBackground(Theme.bg)
         #if os(iOS)
         .presentationDetents([.height(250)])
         .presentationDragIndicator(.visible)
