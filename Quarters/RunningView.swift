@@ -30,7 +30,11 @@ struct RunningView: View {
     private var sortedTasks: [FocusTask] {
         session.tasks
             .filter { !$0.isArchived }
-            .sorted { $0.sortOrder < $1.sortOrder }
+            // Completed goals sink to the bottom; within each group, sortOrder.
+            .sorted {
+                if $0.isDone != $1.isDone { return !$0.isDone }
+                return $0.sortOrder < $1.sortOrder
+            }
     }
     private var doneCount: Int { sortedTasks.filter { $0.isDone }.count }
     private var taskPtsEarned: Int {
@@ -136,7 +140,9 @@ struct RunningView: View {
                                 .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                                 .overlay(RoundedRectangle(cornerRadius: 11)
                                     .strokeBorder(Theme.line2, lineWidth: 1.5))
+                                .contentShape(Rectangle())
                                 .focused($inputFocused)
+                                .onTapGesture { inputFocused = true }
                                 .onSubmit(addTask)
 
                             Button(action: addTask) {
@@ -168,8 +174,10 @@ struct RunningView: View {
                                 ))
                             }
                         }
+                        // Animate on the ordered identity so completing a goal
+                        // (which sinks it to the bottom) slides smoothly.
                         .animation(.spring(response: 0.38, dampingFraction: 0.8),
-                                   value: sortedTasks.map(\.sortOrder))
+                                   value: sortedTasks.map(\.id))
                         .animation(.easeInOut(duration: 0.25), value: pendingDeletes)
                         .padding(.bottom, 4)
                     }

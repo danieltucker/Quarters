@@ -101,7 +101,9 @@ struct SetupView: View {
                             .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
                             .overlay(RoundedRectangle(cornerRadius: 11)
                                 .strokeBorder(Theme.line2, lineWidth: 1.5))
+                            .contentShape(Rectangle())
                             .focused($goalFocused)
+                            .onTapGesture { goalFocused = true }
                             .onSubmit(addTask)
 
                         Button(action: addTask) {
