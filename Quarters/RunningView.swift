@@ -88,7 +88,27 @@ struct RunningView: View {
                         .foregroundStyle(Theme.ink2)
                         .multilineTextAlignment(.center)
                         .padding(.top, 12)
-                        .padding(.bottom, 18)
+                        .padding(.bottom, 12)
+
+                        // ── Add a quarter mid-session ─────────────────
+                        if session.blockCount < 4 {
+                            Button(action: addQuarter) {
+                                HStack(spacing: 6) {
+                                    QIcon(name: "plus", size: 12, color: Theme.accent)
+                                    Text("Add a quarter · +15 min")
+                                        .font(.qText(12.5, weight: .semibold))
+                                        .foregroundStyle(Theme.accent)
+                                }
+                                .padding(.vertical, 7)
+                                .padding(.horizontal, 14)
+                                .background(Theme.accentSoft, in: Capsule())
+                                .overlay(Capsule().strokeBorder(Theme.accentDeep.opacity(0.4), lineWidth: 1))
+                                .contentShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                            .hoverLift(1.04)
+                            .padding(.bottom, 18)
+                        }
 
                         // ── Session goals ─────────────────────────────
                         HStack {
@@ -211,6 +231,22 @@ struct RunningView: View {
             context.insert(task)
         }
         Haptics.pop()
+    }
+
+    /// Extend the running session by one quarter (+15 min). Reschedules the
+    /// end notification and refreshes the Live Activity's end time.
+    private func addQuarter() {
+        guard session.blockCount < 4 else { return }
+        Haptics.tick()
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            session.blockCount += 1
+        }
+        Notifications.cancelSessionEnd()
+        Notifications.scheduleSessionEnd(at: session.endTime, blockCount: session.blockCount)
+        LiveActivity.update(startDate: session.startedAt,
+                            endDate: session.endTime,
+                            totalQuarters: session.blockCount,
+                            completedQuarters: completedQuarters)
     }
 
     /// Assign unique sort orders to session tasks that all have the default (0).

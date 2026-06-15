@@ -37,6 +37,8 @@ struct ContentView: View {
     @State private var displayedBalance = 0
     @State private var animatingBalance = false
 
+    @State private var showCoinEditor = false
+
     private var balance: Int { ledger.reduce(0) { $0 + $1.delta } }
 
     var body: some View {
@@ -49,9 +51,14 @@ struct ContentView: View {
             HStack {
                 Spacer()
                 QCoinChip(balance: displayedBalance)
+                    // Hidden utility: triple-tap the balance to set it directly.
+                    .onTapGesture(count: 3) { showCoinEditor = true }
             }
             .padding(.trailing, 18)
             .modifier(HeaderStripStyle())
+            .sheet(isPresented: $showCoinEditor) {
+                CoinEditorSheet(currentBalance: balance, onSave: adjustBalance(to:))
+            }
 
             // ── Tab switcher ─────────────────────────────────────────────
             tabBar
@@ -182,6 +189,14 @@ struct ContentView: View {
         guard allRewards.isEmpty else { return }
         Reward.seedDefaults(into: context)
         try? context.save()
+    }
+
+    /// Set the balance directly by inserting an adjusting ledger entry, so the
+    /// existing history is preserved and the change is recorded as a "Coin update".
+    private func adjustBalance(to newValue: Int) {
+        let delta = max(0, newValue) - balance
+        guard delta != 0 else { return }
+        context.insert(LedgerEntry(delta: delta, reason: "Coin update"))
     }
 
     // MARK: - Coin flight
@@ -322,6 +337,64 @@ struct ContentView: View {
             animatingBalance = false
             displayedBalance = balance
         }
+    }
+}
+
+// MARK: - Coin editor (triple-tap the balance)
+
+private struct CoinEditorSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let currentBalance: Int
+    let onSave: (Int) -> Void
+    @State private var text = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Update coins")
+                .font(.qText(16, weight: .bold))
+                .foregroundStyle(Theme.ink)
+
+            Text("Set your balance directly. Your current total and history are kept — this adds a “Coin update” entry to the ledger.")
+                .font(.qText(12.5))
+                .foregroundStyle(Theme.ink2)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 10) {
+                QCoin(size: 20)
+                TextField("Balance", text: $text)
+                    .textFieldStyle(.plain)
+                    .font(.qMono(18, weight: .semibold))
+                    .foregroundStyle(Theme.ink)
+                    #if os(iOS)
+                    .keyboardType(.numberPad)
+                    #endif
+            }
+            .padding(.horizontal, 14)
+            .frame(height: 50)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Theme.line2, lineWidth: 1))
+
+            HStack {
+                Spacer()
+                Button("Cancel") { dismiss() }
+                    .buttonStyle(OutlineButtonStyle())
+                Button("Save") {
+                    if let v = Int(text) { onSave(v) }
+                    dismiss()
+                }
+                .buttonStyle(AccentButtonStyle())
+                .disabled(Int(text) == nil)
+                .opacity(Int(text) == nil ? 0.4 : 1)
+            }
+        }
+        .padding(22)
+        .frame(minWidth: 320)
+        .background(Theme.bg)
+        #if os(iOS)
+        .presentationDetents([.height(250)])
+        .presentationDragIndicator(.visible)
+        #endif
+        .onAppear { text = String(currentBalance) }
     }
 }
 

@@ -241,8 +241,12 @@ struct LedgerRow: View {
     let entry: LedgerEntry
 
     private var isEarn: Bool { entry.delta > 0 }
+    private var isAdjustment: Bool { entry.reason.hasPrefix("Coin update") }
 
-    private var iconName: String { isEarn ? "bolt" : "gift" }
+    private var iconName: String {
+        if isAdjustment { return "edit" }
+        return isEarn ? "bolt" : "gift"
+    }
 
     private var formattedAmount: String {
         isEarn ? "+\(entry.delta)" : "−\(abs(entry.delta))"
