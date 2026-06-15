@@ -1,7 +1,10 @@
 import Foundation
+import os
 #if os(iOS)
 import ActivityKit
 #endif
+
+private let liveLog = Logger(subsystem: "Quarters", category: "LiveActivity")
 
 /// Starts / updates / ends the focus-session Live Activity (Dynamic Island +
 /// lock screen). The countdown itself animates on its own via Text/ProgressView
@@ -14,18 +17,21 @@ enum LiveActivity {
 
     static func start(startDate: Date, endDate: Date, totalQuarters: Int) {
         #if os(iOS)
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        let enabled = ActivityAuthorizationInfo().areActivitiesEnabled
+        liveLog.notice("start() — areActivitiesEnabled=\(enabled, privacy: .public)")
+        guard enabled else { return }
         endAll()   // never run two at once
         let attributes = SessionActivityAttributes(sessionLabel: "Focus session")
         let state = SessionActivityAttributes.ContentState(
             startDate: startDate, endDate: endDate,
             totalQuarters: totalQuarters, completedQuarters: 0)
         do {
-            _ = try Activity.request(
+            let activity = try Activity.request(
                 attributes: attributes,
                 content: .init(state: state, staleDate: endDate))
+            liveLog.notice("started Live Activity id=\(activity.id, privacy: .public)")
         } catch {
-            // Request can fail (system limits, disabled mid-flight) — ignore.
+            liveLog.error("Activity.request failed: \(error.localizedDescription, privacy: .public)")
         }
         #endif
     }
