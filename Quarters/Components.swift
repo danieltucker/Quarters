@@ -137,6 +137,46 @@ struct IconButtonStyle: ButtonStyle {
     }
 }
 
+// Duration chip (15/30/45/60m): equal-width segment with hover (macOS),
+// press squish, and selected accent fill — restores the tap/hover feedback.
+
+struct DurationChipStyle: ButtonStyle {
+    let active: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        StyleBody(configuration: configuration, active: active)
+    }
+
+    private struct StyleBody: View {
+        let configuration: Configuration
+        let active: Bool
+        @State private var hovering = false
+
+        var body: some View {
+            configuration.label
+                .font(.qMono(13, weight: .semibold))
+                .lineLimit(1)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 9)
+                .foregroundStyle(active ? Theme.onAccent : Theme.ink2)
+                .background(
+                    active ? Theme.accent : (hovering ? Theme.card2 : Theme.card),
+                    in: RoundedRectangle(cornerRadius: 9)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 9)
+                        .strokeBorder(active ? Theme.accentDeep : Theme.line, lineWidth: 1)
+                )
+                .contentShape(RoundedRectangle(cornerRadius: 9))
+                .scaleEffect(configuration.isPressed ? 0.93 : (active ? 1.04 : 1))
+                .animation(.easeOut(duration: 0.12), value: hovering)
+                .animation(.spring(response: 0.25, dampingFraction: 0.6), value: configuration.isPressed)
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: active)
+                .onHover { hovering = $0 }
+        }
+    }
+}
+
 // MARK: - Hover lift
 // Reusable hover affordance for cards and rows: soft shadow + optional scale.
 

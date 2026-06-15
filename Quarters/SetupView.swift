@@ -60,29 +60,13 @@ struct SetupView: View {
                         // segments, single line so they never wrap.
                         HStack(spacing: 8) {
                             ForEach([1, 2, 3, 4], id: \.self) { q in
-                                let active = q == quarters
-                                Button { quarters = q } label: {
+                                Button {
+                                    quarters = q
+                                    Haptics.tick()
+                                } label: {
                                     Text("\(q * 15)m")
-                                        .font(.qMono(13, weight: .semibold))
-                                        .lineLimit(1)
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 9)
-                                        .background(
-                                            active ? Theme.accent : Theme.card,
-                                            in: RoundedRectangle(cornerRadius: 9)
-                                        )
-                                        .foregroundStyle(active ? Theme.onAccent : Theme.ink2)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 9)
-                                                .strokeBorder(
-                                                    active ? Theme.accentDeep : Theme.line,
-                                                    lineWidth: 1
-                                                )
-                                        )
-                                        .contentShape(Rectangle())
                                 }
-                                .buttonStyle(.plain)
-                                .scaleEffect(active ? 1.04 : 1)
+                                .buttonStyle(DurationChipStyle(active: q == quarters))
                             }
                         }
                     }

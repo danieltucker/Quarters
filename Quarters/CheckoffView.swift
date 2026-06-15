@@ -7,7 +7,9 @@ struct CheckoffView: View {
     @Query private var dailyLogs: [DailyLog]
 
     private var sortedTasks: [FocusTask] {
-        session.tasks.sorted { $0.createdAt < $1.createdAt }
+        session.tasks
+            .filter { !$0.isArchived }
+            .sorted { $0.sortOrder < $1.sortOrder }
     }
 
     private var taskBonus: Int {
@@ -61,13 +63,19 @@ struct CheckoffView: View {
                             .font(.qText(15, weight: .semibold))
                             .foregroundStyle(Theme.ink2)
 
-                        HStack(alignment: .firstTextBaseline, spacing: 4) {
-                            Text("+\(totalPoints)")
-                                .font(.qDisplay(32))
-                                .foregroundStyle(Theme.coin)
-                            Text("coins")
-                                .font(.qText(16, weight: .semibold))
-                                .foregroundStyle(Theme.coinDeep)
+                        if totalPoints > 0 {
+                            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                Text("+\(totalPoints)")
+                                    .font(.qDisplay(32))
+                                    .foregroundStyle(Theme.coin)
+                                Text("coins")
+                                    .font(.qText(16, weight: .semibold))
+                                    .foregroundStyle(Theme.coinDeep)
+                            }
+                        } else {
+                            Text("You earned 0 coins")
+                                .font(.qDisplay(22))
+                                .foregroundStyle(Theme.ink2)
                         }
 
                         if let breakdown = breakdownLine {
@@ -95,7 +103,9 @@ struct CheckoffView: View {
             }
 
             // ── Collect (pinned to bottom) ────────────────────────────
-            Button("Collect \(totalPoints) coins", action: collect)
+            // Can't "collect" nothing — say Done when the haul is zero.
+            Button(totalPoints > 0 ? "Collect \(totalPoints) coins" : "Done",
+                   action: collect)
                 .buttonStyle(AccentButtonStyle(wide: true))
                 .padding(.top, 12)
         }
@@ -123,7 +133,7 @@ struct CheckoffView: View {
             context.insert(DailyLog())
         }
 
-        for task in session.tasks where !task.isDone {
+        for task in session.tasks where !task.isDone && !task.isArchived {
             task.session = nil
             task.carriedOver = true
         }
